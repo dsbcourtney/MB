@@ -1,0 +1,14 @@
+exception 'ErrorException' with message 'mysqli_stmt::bind_param(): Number of elements in type definition string doesn't match number of bind variables' in C:\MB\src\include\DbHandler.php:134
+Stack trace:
+#0 [internal function]: Slim\Slim::handleErrors(2, 'mysqli_stmt::bi...', 'C:\\MB\\src\\inclu...', 134, Array)
+#1 C:\MB\src\include\DbHandler.php(134): mysqli_stmt->bind_param('sisi', 'David Courtney', 1, '1', 'mLp3PmhbzfjgHEj...', 4)
+#2 C:\MB\src\include\Functions.php(173): DbHandler->updateUser(Array)
+#3 C:\MB\src\v1\index.php(105): forgottenLoginEmail('dsbcourtney@goo...')
+#4 [internal function]: {closure}()
+#5 C:\MB\src\libs\vendor\slim\slim\Slim\Route.php(468): call_user_func_array(Object(Closure), Array)
+#6 C:\MB\src\libs\vendor\slim\slim\Slim\Slim.php(1338): Slim\Route->dispatch()
+#7 C:\MB\src\libs\vendor\slim\slim\Slim\Middleware\Flash.php(85): Slim\Slim->call()
+#8 C:\MB\src\libs\vendor\slim\slim\Slim\Middleware\MethodOverride.php(92): Slim\Middleware\Flash->call()
+#9 C:\MB\src\libs\vendor\slim\slim\Slim\Slim.php(1283): Slim\Middleware\MethodOverride->call()
+#10 C:\MB\src\v1\index.php(338): Slim\Slim->run()
+#11 {main}

@@ -98,7 +98,8 @@ function registrationEmail($email) {
   // Check to see if its been sent before or not
   $user = $db->getUserByEmail($email);
   if ($user != NULL) {
-    if ($user['validate_email']=='') { // Default value to email not been sent yet
+
+    if ($user['validate_email']!=1) { // Not validated yet
 
       // Create validation hash
       $randomString = randomString(20);
@@ -125,11 +126,54 @@ function registrationEmail($email) {
         $db->updateUser($user);
       }
 
+    } else {
+      $response["error"] = true;
+      $response["message"] = 'Email address already validated';    
+      $app->stop();     
     }
+
   } else {
     $response["error"] = true;
     $response["message"] = 'User could not be found to send the registration email';    
     $app->stop();
+  }
+}
+
+/** 
+* Forgotten login email
+* @oaram Email parsed
+*/
+function forgottenLoginEmail($email) {
+  $app = \Slim\Slim::getInstance();
+  $db = new DbHandler();
+  $user = $db->getUserByEmail($email);
+  if ($user != NULL) {
+
+    // Create validation hash
+    $randomString = randomString(20);
+
+    $message = file_get_contents('../templates/forgottenLogin_email.html');
+    $message = str_replace("%users_name%", $user['name'], $message);
+    $message = str_replace("%url_reset_password%", URL_RESET_PASSWORD.'?ident='.$user['id'].$randomString, $message);
+
+    $mail = new PHPMailer;
+    $mail->IsSMTP();
+    $mail->setFrom(EMAIL_FROM, EMAIL_FROM_NAME);
+    $mail->addReplyTo(EMAIL_REPLY, EMAIL_REPLY_NAME);
+    $mail->addAddress($user['email'], $user['name']);
+    $mail->Subject = 'Matesbet Reset Password';
+    $mail->msgHTML($message);
+    $mail->AltBody = ''; // Body if they don't except html. Some mobiles etc may use this
+
+    if (!$mail->send()) {
+      $app->log->warning(logValue('Reset password did not send to user id '.$user['id'], 'Warning'));
+    } else {
+      // Update database to send welcome and verification email has been sent
+      $user['reset_password'] = $randomString;
+      $db->updateUser($user);
+    }
+
+
   }
 }
 

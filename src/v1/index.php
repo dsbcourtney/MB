@@ -61,6 +61,12 @@ $app->post('/register', function() use ($app) {
   }
 });
 
+/**
+* Validate email
+* url - /validate/email
+* method - GET
+* params - ident (indentification based on database and userid combination)
+*/
 $app->get('/validate/email', function() use ($app) {
   $response = array();
   $ident = $app->request->get('ident');
@@ -79,6 +85,61 @@ $app->get('/validate/email', function() use ($app) {
     $response["message"] = "Sorry, validation failed";
     echoRespnse(200, $response);
   }
+
+});
+
+/**
+* Forgotten Login
+* url - /forgotten-login
+* method - POST
+* params - email
+*/
+$app->post('/forgotten/login', function() use ($app) {
+  $email = $app->request()->post('email');
+  $db = new DbHandler();
+  $response = array();
+
+  $user = $db->getUserByEmail($email);
+
+  if ($user != NULL) {
+    forgottenLoginEmail($email);
+    $response['error'] = false;
+    $response['message'] = 'Forgotten login email sent';
+  } else {
+    $response['error'] = true;
+    $response['message'] = 'Account not found';      
+  }
+
+  echoRespnse(200, $response);
+});
+
+/**
+* Reset Password
+* url - /reset/password
+* method - GET
+* params - ident (indentification based on database and userid combination)
+*/
+$app->get('/reset/password', function() use ($app) {
+  $response = array();
+  $ident = $app->request()->get('ident');
+
+  $userid = substr($ident,0,1);
+  $string = substr($ident,1);
+  $db = new DbHandler();
+  /*
+  $res = $db->validateUser($userid, $string);
+
+  if ($res == VALIDATION_SUCCESS) {
+    $response["error"] = false;
+    $response["message"] = "Validation successful";    
+    echoRespnse(201, $response);
+  } else if ($res == VALIDATION_FAILURE) {
+    $response["error"] = true;
+    $response["message"] = "Sorry, validation failed";
+    echoRespnse(200, $response);
+  }
+  */
+
 
 });
 

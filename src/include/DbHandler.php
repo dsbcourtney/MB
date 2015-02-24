@@ -114,7 +114,7 @@ class DbHandler {
    * @param String $email User email id
    */
   public function getUserByEmail($email) {
-    $stmt = $this->conn->prepare("SELECT id, name, email, api_key, status, created_at, validate_email FROM users WHERE email = ?");
+    $stmt = $this->conn->prepare("SELECT id, name, email, api_key, status, created_at, validate_email, reset_password FROM users WHERE email = ?");
     $stmt->bind_param("s", $email);
     if ($stmt->execute()) {
       $user = $stmt->get_result()->fetch_assoc();
@@ -130,8 +130,8 @@ class DbHandler {
   * @param pass the $user you get from getUserByEmail or such function
   */
   public function updateUser($user) {
-    $update = $this->conn->prepare("UPDATE users SET name = ?, status = ?, validate_email = ? WHERE id = ?");
-    $update->bind_param("sisi", $user['name'], $user['status'], $user['validate_email'], $user['id']);    
+    $update = $this->conn->prepare("UPDATE users SET name = ?, status = ?, validate_email = ?, reset_password = ? WHERE id = ?");
+    $update->bind_param("sissi", $user['name'], $user['status'], $user['validate_email'], $user['reset_password'], $user['id']);    
     $update->execute();
     $update->close();
   }

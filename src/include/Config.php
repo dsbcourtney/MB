@@ -28,3 +28,4 @@ define('EMAIL_REPLY_NAME', 'Matesbet Support');
 
 /* Url variables */
 define('URL_VALIDATE_EMAIL', 'localhost/validate/email'); // This is set to the api at the moment 
+define('URL_RESET_PASSWORD', 'localhost/reset/password'); // This is set to the api at the moment
