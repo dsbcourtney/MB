@@ -1,18 +1,19 @@
 <?php
-/**
- * Page paths
- *
- * @author David Courtney
- */
-
+require_once '../include/Config.php';
 require_once '../include/DbHandler.php';
 require_once '../include/PassHash.php';
 require_once '../include/Functions.php';
 require '.././libs/vendor/autoload.php';
  
+//\Slim\Slim::registerAutoloader();
+
+$logWriter = new \Slim\LogWriter(fopen(LOG_LOCATION, 'a'));
+
 $app = new \Slim\Slim(array(
-    'debug' => true
-));
+    'debug'=>false,
+    'log.enabled'=>true,
+    'log.writer'=>$logWriter
+  ));
  
 // User id from db - Global Variable
 $user_id = NULL;
@@ -25,7 +26,6 @@ $user_id = NULL;
  */
 $app->post('/register', function() use ($app) {
   // check for required params
-  //print_r($_REQUEST);
   verifyRequiredParams(array('name', 'email', 'password'));
 
   $response = array();
@@ -35,12 +35,10 @@ $app->post('/register', function() use ($app) {
   $email = $app->request->post('email');
   $password = $app->request->post('password');
 
-  // Do all the validation here
   // validating email address
   validateEmail($email);
-  // Check password is complex enough
-
-  // Check name is not blank
+  // validating password 
+  validatePass($password);
 
   $db = new DbHandler();
   $res = $db->createUser($name, $email, $password);
@@ -48,16 +46,101 @@ $app->post('/register', function() use ($app) {
   if ($res == USER_CREATED_SUCCESSFULLY) {
     $response["error"] = false;
     $response["message"] = "You are successfully registered";
+    // Send the user a registration email
+    registrationEmail($email);
+
     echoRespnse(201, $response);
   } else if ($res == USER_CREATE_FAILED) {
     $response["error"] = true;
-    $response["message"] = "Oops! An error occurred while registereing";
+    $response["message"] = "Oops! An error occurred while registering";
     echoRespnse(200, $response);
   } else if ($res == USER_ALREADY_EXISTED) {
     $response["error"] = true;
-    $response["message"] = "Sorry, this email already existed";
+    $response["message"] = "Sorry, this email already exists";
     echoRespnse(200, $response);
   }
+});
+
+/**
+* Validate email
+* url - /validate/email
+* method - GET
+* params - ident (indentification based on database and userid combination)
+*/
+$app->get('/validate/email', function() use ($app) {
+  $response = array();
+  $ident = $app->request->get('ident');
+  
+  $userid = substr($ident,0,1);
+  $string = substr($ident,1);
+  $db = new DbHandler();
+  $res = $db->validateUser($userid, $string);
+
+  if ($res == VALIDATION_SUCCESS) {
+    $response["error"] = false;
+    $response["message"] = "Validation successful";    
+    echoRespnse(201, $response);
+  } else if ($res == VALIDATION_FAILURE) {
+    $response["error"] = true;
+    $response["message"] = "Sorry, validation failed";
+    echoRespnse(200, $response);
+  }
+
+});
+
+/**
+* Forgotten Login
+* url - /forgotten-login
+* method - POST
+* params - email
+*/
+$app->post('/forgotten/login', function() use ($app) {
+  $email = $app->request()->post('email');
+  $db = new DbHandler();
+  $response = array();
+
+  $user = $db->getUserByEmail($email);
+
+  if ($user != NULL) {
+    forgottenLoginEmail($email);
+    $response['error'] = false;
+    $response['message'] = 'Forgotten login email sent';
+  } else {
+    $response['error'] = true;
+    $response['message'] = 'Account not found';      
+  }
+
+  echoRespnse(200, $response);
+});
+
+/**
+* Reset Password
+* url - /reset/password
+* method - GET
+* params - ident (indentification based on database and userid combination)
+*/
+$app->get('/reset/password', function() use ($app) {
+  $response = array();
+  $ident = $app->request()->get('ident');
+
+  $userid = substr($ident,0,1);
+  $string = substr($ident,1);
+  $db = new DbHandler();
+  /*
+  $res = $db->validateUser($userid, $string);
+
+  if ($res == VALIDATION_SUCCESS) {
+    $response["error"] = false;
+    $response["message"] = "Validation successful";    
+    echoRespnse(201, $response);
+  } else if ($res == VALIDATION_FAILURE) {
+    $response["error"] = true;
+    $response["message"] = "Sorry, validation failed";
+    echoRespnse(200, $response);
+  }
+  */
+
+
 });
 
 /**
@@ -67,6 +150,7 @@ $app->post('/register', function() use ($app) {
  * params - email, password
  */
 $app->post('/login', function() use ($app) {
+
   // check for required params
   verifyRequiredParams(array('email', 'password'));
 

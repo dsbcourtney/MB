@@ -1,9 +1,9 @@
 <?php
 /**
- * Functions file
- *
- * @author David Courtney
- */
+* Functions file
+*
+* @author David Courtney
+*/
 
 /**
 * Validating email address
@@ -13,6 +13,30 @@ function validateEmail($email) {
   if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     $response["error"] = true;
     $response["message"] = 'Email address is not valid';
+    echoRespnse(400, $response);
+    $app->stop();
+  }
+}
+
+/**
+* Validating password
+* @param Password for validating
+*/
+function validatePass($pass) {
+  $app = \Slim\Slim::getInstance(); 
+  if (strlen($pass)<8) {
+    $response["error"] = true;
+    $response["message"]= 'Password must be at least 8 characters in length';
+    echoRespnse(400, $response);
+    $app->stop();
+  } elseif (!preg_match("#[0-9]+#", $pass)) {
+    $response["error"] = true;
+    $response["message"]= 'Password must include at least 1 number';
+    echoRespnse(400, $response);
+    $app->stop();
+  } elseif (!preg_match("#[a-z]+#", $pass)) {
+    $response["error"] = true;
+    $response["message"]= 'Password must include at least 1 letter';
     echoRespnse(400, $response);
     $app->stop();
   }
@@ -59,9 +83,134 @@ function echoRespnse($status_code, $response) {
   $app = \Slim\Slim::getInstance();
   // Http response code
   $app->status($status_code);
-
   // setting response content type to json
   $app->contentType('application/json');
-
   echo json_encode($response);
+}
+
+/**
+* Send registration email
+* @param Email used within registration
+*/
+function registrationEmail($email) {
+  $app = \Slim\Slim::getInstance();
+  $db = new DbHandler();
+  // Check to see if its been sent before or not
+  $user = $db->getUserByEmail($email);
+  if ($user != NULL) {
+
+    if ($user['validate_email']!=1) { // Not validated yet
+
+      // Create validation hash
+      $randomString = randomString(20);
+
+      $message = file_get_contents('../templates/registration_email.html');
+      $message = str_replace("%users_name%", $user['name'], $message);
+      $message = str_replace("%users_email%", $user['email'], $message);
+      $message = str_replace("%url_validate_email%", URL_VALIDATE_EMAIL.'?ident='.$user['id'].$randomString, $message);
+
+      $mail = new PHPMailer;
+      $mail->IsSMTP();
+      $mail->setFrom(EMAIL_FROM, EMAIL_FROM_NAME);
+      $mail->addReplyTo(EMAIL_REPLY, EMAIL_REPLY_NAME);
+      $mail->addAddress($user['email'], $user['name']);
+      $mail->Subject = 'Matesbet Registration';
+      $mail->msgHTML($message);
+      $mail->AltBody = ''; // Body if they don't except html. Some mobiles etc may use this
+
+      if (!$mail->send()) {
+        $app->log->warning(logValue('Registration email did not send to user id '.$user['id'], 'Warning'));
+      } else {
+        // Update database to send welcome and verification email has been sent
+        $user['validate_email'] = $randomString;
+        $db->updateUser($user);
+      }
+
+    } else {
+      $response["error"] = true;
+      $response["message"] = 'Email address already validated';    
+      $app->stop();     
+    }
+
+  } else {
+    $response["error"] = true;
+    $response["message"] = 'User could not be found to send the registration email';    
+    $app->stop();
+  }
+}
+
+/** 
+* Forgotten login email
+* @oaram Email parsed
+*/
+function forgottenLoginEmail($email) {
+  $app = \Slim\Slim::getInstance();
+  $db = new DbHandler();
+  $user = $db->getUserByEmail($email);
+  if ($user != NULL) {
+
+    // Create validation hash
+    $randomString = randomString(20);
+
+    $message = file_get_contents('../templates/forgottenLogin_email.html');
+    $message = str_replace("%users_name%", $user['name'], $message);
+    $message = str_replace("%url_reset_password%", URL_RESET_PASSWORD.'?ident='.$user['id'].$randomString, $message);
+
+    $mail = new PHPMailer;
+    $mail->IsSMTP();
+    $mail->setFrom(EMAIL_FROM, EMAIL_FROM_NAME);
+    $mail->addReplyTo(EMAIL_REPLY, EMAIL_REPLY_NAME);
+    $mail->addAddress($user['email'], $user['name']);
+    $mail->Subject = 'Matesbet Reset Password';
+    $mail->msgHTML($message);
+    $mail->AltBody = ''; // Body if they don't except html. Some mobiles etc may use this
+
+    if (!$mail->send()) {
+      $app->log->warning(logValue('Reset password did not send to user id '.$user['id'], 'Warning'));
+    } else {
+      // Update database to send welcome and verification email has been sent
+      $user['reset_password'] = $randomString;
+      $db->updateUser($user);
+    }
+
+
+  }
+}
+
+/**
+* Turns value into more descriptive log value 
+* @param Log value
+* @param Error type
+* $app->log->debug(logValue($val, $type));
+* $app->log->info(logValue($val, $type));
+* $app->log->notice(logValue($val, $type));
+* $app->log->warning(logValue($val, $type));
+* $app->log->error(logValue($val, $type));
+* $app->log->critical(logValue($val, $type));
+* $app->log->alert(logValue($val, $type));
+* $app->log->emergency(logValue($val, $type));
+*/
+function logValue($val, $errtype) {
+  $errtype = strtolower($errtype);
+  if ($errtype=='alert') {
+    // SEND EMAIL ALERT TO ME
+  } elseif ($errtype=='emergency') {
+    // DO SOMETHING MORE LIKE RING ME OR SOMETHING?!
+  }
+  return date('Y-m-d H:i:s', time()).' - '.ucwords($errtype).' - '.$val;
+}
+
+
+/** 
+* Random string generator
+* @param length of required string
+*/
+function randomString($length) {
+  $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  $charactersLength = strlen($characters);
+  $randomString = '';
+  for ($i = 0; $i < $length; $i++) {
+    $randomString .= $characters[rand(0, $charactersLength - 1)];
+  }
+  return $randomString;
 }

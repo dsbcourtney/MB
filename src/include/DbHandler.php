@@ -40,7 +40,6 @@ class DbHandler {
       // insert query
       $stmt = $this->conn->prepare("INSERT INTO users(name, email, password_hash, api_key, status) values(?, ?, ?, ?, 1)");
       $stmt->bind_param("ssss", $name, $email, $password_hash, $api_key);
-
       $result = $stmt->execute();
 
       $stmt->close();
@@ -70,21 +69,14 @@ class DbHandler {
   public function checkLogin($email, $password) {
     // fetching user by email
     $stmt = $this->conn->prepare("SELECT password_hash FROM users WHERE email = ?");
-
     $stmt->bind_param("s", $email);
-
     $stmt->execute();
-
     $stmt->bind_result($password_hash);
-
     $stmt->store_result();
-
     if ($stmt->num_rows > 0) {
       // Found user with the email
       // Now verify the password
-
       $stmt->fetch();
-
       $stmt->close();
 
       if (PassHash::check_password($password_hash, $password)) {
@@ -122,7 +114,7 @@ class DbHandler {
    * @param String $email User email id
    */
   public function getUserByEmail($email) {
-    $stmt = $this->conn->prepare("SELECT name, email, api_key, status, created_at FROM users WHERE email = ?");
+    $stmt = $this->conn->prepare("SELECT id, name, email, api_key, status, created_at, validate_email, reset_password FROM users WHERE email = ?");
     $stmt->bind_param("s", $email);
     if ($stmt->execute()) {
       $user = $stmt->get_result()->fetch_assoc();
@@ -131,6 +123,36 @@ class DbHandler {
     } else {
       return NULL;
     }
+  }
+
+  /**
+  * Update the user
+  * @param pass the $user you get from getUserByEmail or such function
+  */
+  public function updateUser($user) {
+    $update = $this->conn->prepare("UPDATE users SET name = ?, status = ?, validate_email = ?, reset_password = ? WHERE id = ?");
+    $update->bind_param("sissi", $user['name'], $user['status'], $user['validate_email'], $user['reset_password'], $user['id']);    
+    $update->execute();
+    $update->close();
+  }
+
+  /**
+  * Validate the user
+  * @param userid
+  * @param validate_email
+  */
+  public function validateUser($userid, $validate_email) {
+    $update = $this->conn->prepare("UPDATE users SET validate_email = 1 WHERE id = ? AND validate_email = ?");
+    $update->bind_param("is", $userid, $validate_email);
+    $update->execute();
+    $result = $update->affected_rows;
+    $update->close();
+    if ($result==1) {
+      return VALIDATION_SUCCESS;
+    } else {
+      return VALIDATION_FAILURE;
+    }
+    
   }
 
   /**
@@ -145,7 +167,7 @@ class DbHandler {
       $stmt->close();
       return $api_key;
     } else {
-      return NULL; 
+      return NULL;
     }
   }
 
@@ -202,20 +224,20 @@ class DbHandler {
     $stmt->close();
 
     if ($result) {
-        // task row created
-        // now assign the task to user
-        $new_task_id = $this->conn->insert_id;
-        $res = $this->createUserTask($user_id, $new_task_id);
-        if ($res) {
-            // task created successfully
-            return $new_task_id;
-        } else {
-            // task failed to create
-            return NULL;
-        }
-    } else {
+      // task row created
+      // now assign the task to user
+      $new_task_id = $this->conn->insert_id;
+      $res = $this->createUserTask($user_id, $new_task_id);
+      if ($res) {
+        // task created successfully
+        return $new_task_id;
+      } else {
         // task failed to create
         return NULL;
+      }
+    } else {
+      // task failed to create
+      return NULL;
     }
   }
 
@@ -224,15 +246,15 @@ class DbHandler {
    * @param String $task_id id of the task
    */
   public function getTask($task_id, $user_id) {
-      $stmt = $this->conn->prepare("SELECT t.id, t.task, t.status, t.created_at from tasks t, user_tasks ut WHERE t.id = ? AND ut.task_id = t.id AND ut.user_id = ?");
-      $stmt->bind_param("ii", $task_id, $user_id);
-      if ($stmt->execute()) {
-          $task = $stmt->get_result()->fetch_assoc();
-          $stmt->close();
-          return $task;
-      } else {
-          return NULL;
-      }
+    $stmt = $this->conn->prepare("SELECT t.id, t.task, t.status, t.created_at from tasks t, user_tasks ut WHERE t.id = ? AND ut.task_id = t.id AND ut.user_id = ?");
+    $stmt->bind_param("ii", $task_id, $user_id);
+    if ($stmt->execute()) {
+      $task = $stmt->get_result()->fetch_assoc();
+      $stmt->close();
+      return $task;
+    } else {
+      return NULL;
+    }
   }
 
   /**
@@ -240,12 +262,12 @@ class DbHandler {
    * @param String $user_id id of the user
    */
   public function getAllUserTasks($user_id) {
-      $stmt = $this->conn->prepare("SELECT t.* FROM tasks t, user_tasks ut WHERE t.id = ut.task_id AND ut.user_id = ?");
-      $stmt->bind_param("i", $user_id);
-      $stmt->execute();
-      $tasks = $stmt->get_result();
-      $stmt->close();
-      return $tasks;
+    $stmt = $this->conn->prepare("SELECT t.* FROM tasks t, user_tasks ut WHERE t.id = ut.task_id AND ut.user_id = ?");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $tasks = $stmt->get_result();
+    $stmt->close();
+    return $tasks;
   }
 
   /**
@@ -255,12 +277,12 @@ class DbHandler {
    * @param String $status task status
    */
   public function updateTask($user_id, $task_id, $task, $status) {
-      $stmt = $this->conn->prepare("UPDATE tasks t, user_tasks ut set t.task = ?, t.status = ? WHERE t.id = ? AND t.id = ut.task_id AND ut.user_id = ?");
-      $stmt->bind_param("siii", $task, $status, $task_id, $user_id);
-      $stmt->execute();
-      $num_affected_rows = $stmt->affected_rows;
-      $stmt->close();
-      return $num_affected_rows > 0;
+    $stmt = $this->conn->prepare("UPDATE tasks t, user_tasks ut set t.task = ?, t.status = ? WHERE t.id = ? AND t.id = ut.task_id AND ut.user_id = ?");
+    $stmt->bind_param("siii", $task, $status, $task_id, $user_id);
+    $stmt->execute();
+    $num_affected_rows = $stmt->affected_rows;
+    $stmt->close();
+    return $num_affected_rows > 0;
   }
 
   /**
@@ -268,12 +290,12 @@ class DbHandler {
    * @param String $task_id id of the task to delete
    */
   public function deleteTask($user_id, $task_id) {
-      $stmt = $this->conn->prepare("DELETE t FROM tasks t, user_tasks ut WHERE t.id = ? AND ut.task_id = t.id AND ut.user_id = ?");
-      $stmt->bind_param("ii", $task_id, $user_id);
-      $stmt->execute();
-      $num_affected_rows = $stmt->affected_rows;
-      $stmt->close();
-      return $num_affected_rows > 0;
+    $stmt = $this->conn->prepare("DELETE t FROM tasks t, user_tasks ut WHERE t.id = ? AND ut.task_id = t.id AND ut.user_id = ?");
+    $stmt->bind_param("ii", $task_id, $user_id);
+    $stmt->execute();
+    $num_affected_rows = $stmt->affected_rows;
+    $stmt->close();
+    return $num_affected_rows > 0;
   }
 
   /* ------------- `user_tasks` table method ------------------ */
@@ -284,11 +306,11 @@ class DbHandler {
    * @param String $task_id id of the task
    */
   public function createUserTask($user_id, $task_id) {
-      $stmt = $this->conn->prepare("INSERT INTO user_tasks(user_id, task_id) values(?, ?)");
-      $stmt->bind_param("ii", $user_id, $task_id);
-      $result = $stmt->execute();
-      $stmt->close();
-      return $result;
+    $stmt = $this->conn->prepare("INSERT INTO user_tasks(user_id, task_id) values(?, ?)");
+    $stmt->bind_param("ii", $user_id, $task_id);
+    $result = $stmt->execute();
+    $stmt->close();
+    return $result;
   }
- 
+
 }
