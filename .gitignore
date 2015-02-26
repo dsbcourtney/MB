@@ -1,2 +1,4 @@
 /src/api/libs/vendor
 /src/site/libs/vendor
+/src/api/libs/composer.lock
+/src/site/libs/composer.lock

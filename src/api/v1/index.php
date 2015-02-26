@@ -1,9 +1,10 @@
 <?php
+ini_set('display_errors', 1);
 require_once '../include/Config.php';
 require_once '../include/DbHandler.php';
 require_once '../include/PassHash.php';
 require_once '../include/Functions.php';
-require '.././libs/vendor/autoload.php';
+require '../libs/vendor/autoload.php';
  
 //\Slim\Slim::registerAutoloader();
 
