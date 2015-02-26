@@ -1,7 +1,0 @@
-{
-	"name": "Matesbet/v0.1",
-    "require": {
-        "slim/slim": "~2.5",
-        "phpmailer/phpmailer": "dev-master"
-    }
-}
