@@ -1,0 +1,7 @@
+home:
+ path: /home
+ defaults: { _controller: MBBundle:Default:index }
+
+login:
+ pattern: /
+ defaults: { _controller: MBBundle:User:login }

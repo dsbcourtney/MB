@@ -1,8 +1,0 @@
-{
-	"name": "Matesbet/Website/v0.1",
-    "require": {
-        "slim/slim": "~2.5",
-        "phpmailer/phpmailer": "dev-master",
-        "symfony/symfony": "2.6.0"
-    }
-}
