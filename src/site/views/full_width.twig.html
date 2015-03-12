@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
     <meta name="author" content="">
-    <title>Navbar Template for Bootstrap</title>
+    <title>{% block title %}{% endblock %}{{site_title}}</title>
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="{{ siteUrl('/assets/css/bootstrap.min.css') }}" />  
     <link rel="stylesheet" href="{{ siteUrl('/assets/css/navbar.css') }}" />    
