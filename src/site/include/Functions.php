@@ -13,7 +13,7 @@ function postData($url, $vars) {
 	curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 	curl_setopt($ch, CURLOPT_HEADER, 0);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-
-	return curl_exec($ch);
+	// Always json so return that
+	return json_decode(curl_exec($ch));
 	//print_r($response);
 }

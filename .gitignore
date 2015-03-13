@@ -3,6 +3,6 @@
 /src/site/libs/vendor
 /src/site/libs/composer.lock
 /src/site1
-/src/site/cache
-/src/site/logs
-/src/api/logs
+/src/site/cache/*
+/src/site/logs/*
+/src/api/logs/*

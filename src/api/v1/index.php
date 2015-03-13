@@ -168,6 +168,7 @@ $app->post('/login', function() use ($app) {
 
     if ($user != NULL) {
       $response["error"] = false;
+      $response['id'] = $user['id'];
       $response['name'] = $user['name'];
       $response['email'] = $user['email'];
       $response['apiKey'] = $user['api_key'];
