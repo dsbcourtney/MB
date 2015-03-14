@@ -1,7 +1,8 @@
 {
 	"name": "Matesbet/API/v0.1",
     "require": {
-        "slim/slim": "~2.5",
+        "slim/slim": "2.*",
+        "slim/extras": "2.*",        
         "phpmailer/phpmailer": "dev-master"
     }
 }

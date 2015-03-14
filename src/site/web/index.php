@@ -6,7 +6,12 @@ require_once '../include/Config.php';
 require_once '../include/Functions.php';
 require '../libs/vendor/autoload.php';
 
-$logWriter = new \Slim\LogWriter(fopen(LOG_LOCATION, 'a'));
+
+$logWriter = new \Slim\Extras\Log\DateTimeFileWriter(array(
+            'path' => LOG_LOCATION,
+            'name_format' => 'Y-m-d',
+            'message_format' => '%label% - %date% - %message%'
+        ));
 
 $app = new \Slim\Slim(array(
     'debug'=>false,
@@ -54,20 +59,25 @@ $app->post('/login', function() use ($app) {
     $password = $app->request->post('password');
     $vars = array('email'=>$email, 'password'=>$password);
     $result = postData(URL_API.'/login', $vars);
-    if (!$result->error && $result->id>0) {
-        // Login accepted
-        // Set sessions
-        $_SESSION[SESSION_VAR.'userid'] = $result->id;
-        // Cookie set
-        if ($app->request->post('remember')=='remember-me') {
-            //setcookie();
+    if (isset($result)) {
+        if (!$result->error && $result->id>0) {
+            // Login accepted
+            // Set sessions
+            $_SESSION[SESSION_VAR.'userid'] = $result->id;
+            // Cookie set
+            if ($app->request->post('remember')=='remember-me') {
+                //setcookie();
+            }
+            // Redirect to account
+            header('location:'.URL_HOST.'/account');
+            exit;        
+        } else {
+            $vars = array('title'=>'Login', 'error'=>1, 'message'=>$result->message);
+            $app->render('login.twig.html', $vars);
         }
-        // Redirect to account
-        header('location:'.URL_HOST.'/account');
-        exit;        
     } else {
-        $vars = array('title'=>'Login', 'error'=>1, 'message'=>$result->message);
-        $app->render('login.twig.html', $vars);
+        $vars = array('title'=>'Error', 'message'=>'API not working');
+        $app->render('error.twig.html', $vars);
     }
 });
 

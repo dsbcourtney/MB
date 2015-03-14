@@ -21,7 +21,7 @@ define('VALIDATION_SUCCESS', 1);
 define('VALIDATION_FAILURE', 0);
 
 /* Log location */
-define('LOG_LOCATION', '../logs/app.log');
+define('LOG_LOCATION', '../logs');
 
 /* Email variables */
 define('EMAIL_FROM', 'noreply@localhost');

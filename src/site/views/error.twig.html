@@ -1,0 +1,11 @@
+{% extends "layouts/full_width.twig.html" %}
+
+{% block title %}{{title}}{% endblock %}
+{% block content %}
+	<h1>Error Page</h1>
+	{% if message == "" %}
+	<p>Sorry something went wrong</p>
+	{% else %}
+	<p>{{message}}</p>
+	{% endif %}
+{% endblock %}

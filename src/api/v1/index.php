@@ -8,7 +8,11 @@ require '../libs/vendor/autoload.php';
  
 //\Slim\Slim::registerAutoloader();
 
-$logWriter = new \Slim\LogWriter(fopen(LOG_LOCATION, 'a'));
+$logWriter = new \Slim\Extras\Log\DateTimeFileWriter(array(
+            'path' => LOG_LOCATION,
+            'name_format' => 'Y-m-d',
+            'message_format' => '%label% - %date% - %message%'
+        ));
 
 $app = new \Slim\Slim(array(
     'debug'=>false,
