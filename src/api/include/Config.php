@@ -30,5 +30,5 @@ define('EMAIL_FROM_NAME', 'Matesbet Registrations');
 define('EMAIL_REPLY_NAME', 'Matesbet Support');
 
 /* Url variables */
-define('URL_VALIDATE_EMAIL', URL_HOST.'validate/email'); // This is set to the api at the moment 
-define('URL_RESET_PASSWORD', URL_HOST.'reset/password'); // This is set to the api at the moment
+define('URL_VALIDATE_EMAIL', URL_HOST.'/validate/email'); // This is set to the api at the moment 
+define('URL_RESET_PASSWORD', URL_HOST.'/reset/password'); // This is set to the api at the moment

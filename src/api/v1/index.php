@@ -53,7 +53,8 @@ $app->post('/register', function() use ($app) {
     $response["message"] = "You are successfully registered";
     // Send the user a registration email
     registrationEmail($email);
-
+    $user = $db->getUserByEmail($email);
+    $response["id"] = $user->id;
     echoRespnse(201, $response);
   } else if ($res == USER_CREATE_FAILED) {
     $response["error"] = true;

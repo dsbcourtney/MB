@@ -89,4 +89,30 @@ $app->get('/account', function() use ($app) {
 
 });
 
+$app->get('/register', function() use ($app) {
+    $vars = array('title'=>'Register');
+    $app->render('register.twig.html', $vars);
+});
+
+$app->post('/register', function() use ($app) {
+    $name = $app->request->post('name');
+    $email = $app->request->post('email');
+    $password = $app->request->post('password');
+    $username = $app->request->post('username');
+
+    $vars = array('name'=>$name, 'email'=>$email, 'password'=>$password, 'username'=>$username);
+    $result = postData(URL_API.'/register', $vars);
+    if (isset($result)) {
+        if (!$result->error) {
+
+        } else {
+            $vars = array_merge($vars, array('title'=>'Register', 'error'=>1, 'message'=>$result->message));
+            $app->render('register.twig.html', $vars);
+        }        
+    } else {
+        $vars = array('title'=>'Error', 'message'=>'API not working');
+        $app->render('error.twig.html', $vars);
+    }
+});
+
 $app->run();

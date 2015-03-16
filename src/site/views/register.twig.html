@@ -1,0 +1,44 @@
+{% extends "layouts/full_width.twig.html" %}
+
+{% block title %}{{title}}{% endblock %}
+{% block content %}
+<form class="form-register" action="{{base_url}}/register" method="post">
+  <h2 class="form-signin-heading">Register Now!</h2>
+  <div class="form-group">
+    <label for="inputName">Full name</label>
+    <input name="name" type="text" class="form-control" id="inputName" placeholder="Enter your name" value="{{name}}" required>
+  </div>
+  <div class="form-group">
+    <label for="inputEmail">Email address</label>
+    <input name="email" type="email" class="form-control" id="inputEmail" placeholder="Enter your email" data-error="Email address entered is invalid" value="{{email}}" required>
+    <div class="help-block with-errors"></div>
+  </div>
+  <div class="form-group">
+    <label for="inputPassword">Password</label>
+    <input name="password" type="password" class="form-control" id="inputPassword" data-minlength="8" placeholder="Enter desired password" required>
+    <span class="help-block">Minimum of 8 characters</span>
+  </div>
+  <div class="form-group">
+    <label for="inputUsername">Username</label>
+    <input name="username" type="text" class="form-control" id="inputUsername" data-minlength="4" placeholder="Enter desired username" value="{{username}}" required>
+    <span class="help-block">Minimum of 4 characters</span>
+  </div>
+  <button type="submit" class="btn btn-default btn-primary btn-lg btn-block">Sign up</button>
+  <a class="btn btn-default btn-success btn-lg btn-block" href="{{base_url}}/login">Log in</a> 
+  {% if error == true %}
+  <br>
+  <div class="alert alert-danger alert-dismissible" role="alert">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <strong>Error!</strong> {{message}}
+  </div>
+  {% endif %}
+</form>
+{% endblock %}
+
+{% block java %}
+<script>
+  $(document).ready(function(){
+    $('.form-register').validator();
+  });
+</script>
+{% endblock %}
