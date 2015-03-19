@@ -25,12 +25,21 @@ class DbHandler {
    * @param String $email User login email id
    * @param String $password User login password
    */
-  public function createUser($name, $email, $password) {
+  public function createUser($name, $email, $password, $username) {
     require_once 'PassHash.php';
     $response = array();
 
+    $doCreate = true;
     // First check if user already existed in db
-    if (!$this->isUserExists($email)) {
+    if ($this->isUserExistsEmail($email)) {
+      $doCreate = false;
+      return USER_EMAIL_ALREADY_EXISTED;
+    } elseif ($this->isUserExistsUsername($username)) {
+      $doCreate = false;
+      return USER_USERNAME_ALREADY_EXISTED;
+    }
+
+    if ($doCreate) {
       // Generating password hash
       $password_hash = PassHash::hash($password);
 
@@ -38,8 +47,8 @@ class DbHandler {
       $api_key = $this->generateApiKey();
 
       // insert query
-      $stmt = $this->conn->prepare("INSERT INTO users(name, email, password_hash, api_key, status) values(?, ?, ?, ?, 1)");
-      $stmt->bind_param("ssss", $name, $email, $password_hash, $api_key);
+      $stmt = $this->conn->prepare("INSERT INTO users(name, email, username, password_hash, api_key, status) values(?, ?, ?, ?, ?, 1)");
+      $stmt->bind_param("sssss", $name, $email, $username, $password_hash, $api_key);
       $result = $stmt->execute();
 
       $stmt->close();
@@ -52,9 +61,6 @@ class DbHandler {
         // Failed to create user
         return USER_CREATE_FAILED;
       }
-    } else {
-      // User with same email already existed in the db
-      return USER_ALREADY_EXISTED;
     }
 
     return $response;
@@ -99,7 +105,7 @@ class DbHandler {
    * @param String $email email to check in db
    * @return boolean
    */
-  private function isUserExists($email) {
+  private function isUserExistsEmail($email) {
     $stmt = $this->conn->prepare("SELECT id from users WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
@@ -110,11 +116,26 @@ class DbHandler {
   }
 
   /**
+   * Checking for duplicate user by username
+   * @param String $username to check in db
+   * @return boolean
+   */
+  private function isUserExistsUsername($username) {
+    $stmt = $this->conn->prepare("SELECT id from users WHERE username = ?");
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $stmt->store_result();
+    $num_rows = $stmt->num_rows;
+    $stmt->close();
+    return $num_rows > 0;
+  }  
+
+  /**
    * Fetching user by email
    * @param String $email User email id
    */
   public function getUserByEmail($email) {
-    $stmt = $this->conn->prepare("SELECT id, name, email, api_key, status, created_at, validate_email, reset_password FROM users WHERE email = ?");
+    $stmt = $this->conn->prepare("SELECT id, name, email, username, api_key, status, created_at, validate_email, reset_password FROM users WHERE email = ?");
     $stmt->bind_param("s", $email);
     if ($stmt->execute()) {
       $user = $stmt->get_result()->fetch_assoc();
@@ -210,107 +231,5 @@ class DbHandler {
     return md5(uniqid(rand(), true));
   }
 
-  /* ------------- `tasks` table method ------------------ */
-
-  /**
-   * Creating new task
-   * @param String $user_id user id to whom task belongs to
-   * @param String $task task text
-   */
-  public function createTask($user_id, $task) {        
-    $stmt = $this->conn->prepare("INSERT INTO tasks(task) VALUES(?)");
-    $stmt->bind_param("s", $task);
-    $result = $stmt->execute();
-    $stmt->close();
-
-    if ($result) {
-      // task row created
-      // now assign the task to user
-      $new_task_id = $this->conn->insert_id;
-      $res = $this->createUserTask($user_id, $new_task_id);
-      if ($res) {
-        // task created successfully
-        return $new_task_id;
-      } else {
-        // task failed to create
-        return NULL;
-      }
-    } else {
-      // task failed to create
-      return NULL;
-    }
-  }
-
-  /**
-   * Fetching single task
-   * @param String $task_id id of the task
-   */
-  public function getTask($task_id, $user_id) {
-    $stmt = $this->conn->prepare("SELECT t.id, t.task, t.status, t.created_at from tasks t, user_tasks ut WHERE t.id = ? AND ut.task_id = t.id AND ut.user_id = ?");
-    $stmt->bind_param("ii", $task_id, $user_id);
-    if ($stmt->execute()) {
-      $task = $stmt->get_result()->fetch_assoc();
-      $stmt->close();
-      return $task;
-    } else {
-      return NULL;
-    }
-  }
-
-  /**
-   * Fetching all user tasks
-   * @param String $user_id id of the user
-   */
-  public function getAllUserTasks($user_id) {
-    $stmt = $this->conn->prepare("SELECT t.* FROM tasks t, user_tasks ut WHERE t.id = ut.task_id AND ut.user_id = ?");
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
-    $tasks = $stmt->get_result();
-    $stmt->close();
-    return $tasks;
-  }
-
-  /**
-   * Updating task
-   * @param String $task_id id of the task
-   * @param String $task task text
-   * @param String $status task status
-   */
-  public function updateTask($user_id, $task_id, $task, $status) {
-    $stmt = $this->conn->prepare("UPDATE tasks t, user_tasks ut set t.task = ?, t.status = ? WHERE t.id = ? AND t.id = ut.task_id AND ut.user_id = ?");
-    $stmt->bind_param("siii", $task, $status, $task_id, $user_id);
-    $stmt->execute();
-    $num_affected_rows = $stmt->affected_rows;
-    $stmt->close();
-    return $num_affected_rows > 0;
-  }
-
-  /**
-   * Deleting a task
-   * @param String $task_id id of the task to delete
-   */
-  public function deleteTask($user_id, $task_id) {
-    $stmt = $this->conn->prepare("DELETE t FROM tasks t, user_tasks ut WHERE t.id = ? AND ut.task_id = t.id AND ut.user_id = ?");
-    $stmt->bind_param("ii", $task_id, $user_id);
-    $stmt->execute();
-    $num_affected_rows = $stmt->affected_rows;
-    $stmt->close();
-    return $num_affected_rows > 0;
-  }
-
-  /* ------------- `user_tasks` table method ------------------ */
-
-  /**
-   * Function to assign a task to user
-   * @param String $user_id id of the user
-   * @param String $task_id id of the task
-   */
-  public function createUserTask($user_id, $task_id) {
-    $stmt = $this->conn->prepare("INSERT INTO user_tasks(user_id, task_id) values(?, ?)");
-    $stmt->bind_param("ii", $user_id, $task_id);
-    $result = $stmt->execute();
-    $stmt->close();
-    return $result;
-  }
 
 }

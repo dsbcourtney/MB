@@ -8,11 +8,11 @@
 /**
 * Validating email address
 */
-function validateEmail($email) {
+function validateEmail($email) { 
   $app = \Slim\Slim::getInstance();
   if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     $response["error"] = true;
-    $response["message"] = 'Email address is not valid';
+    $response["message"] = 'Email address '.$email.' is not valid';
     echoRespnse(400, $response);
     $app->stop();
   }
@@ -39,6 +39,20 @@ function validatePass($pass) {
     $response["message"]= 'Password must include at least 1 letter';
     echoRespnse(400, $response);
     $app->stop();
+  }
+}
+
+/**
+* Validating username
+* @param Username for validating
+*/
+function validateUsername($username) {
+  $app = \Slim\Slim::getInstance();
+  if (strlen($username)<4) {
+    $response["error"] = true;
+    $response["message"]= 'Username must be at least 4 characters in length';
+    echoRespnse(400, $response);
+    $app->stop();   
   }
 }
 
@@ -107,6 +121,7 @@ function registrationEmail($email) {
       $message = file_get_contents('../templates/registration_email.html');
       $message = str_replace("%users_name%", $user['name'], $message);
       $message = str_replace("%users_email%", $user['email'], $message);
+      $message = str_replace("%users_username%", $user['username'], $message);
       $message = str_replace("%url_validate_email%", URL_VALIDATE_EMAIL.'?ident='.$user['id'].$randomString, $message);
 
       $mail = new PHPMailer;

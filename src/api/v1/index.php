@@ -31,7 +31,7 @@ $user_id = NULL;
  */
 $app->post('/register', function() use ($app) {
   // check for required params
-  verifyRequiredParams(array('name', 'email', 'password'));
+  verifyRequiredParams(array('name', 'email', 'password', 'username'));
 
   $response = array();
 
@@ -39,14 +39,17 @@ $app->post('/register', function() use ($app) {
   $name = $app->request->post('name');
   $email = $app->request->post('email');
   $password = $app->request->post('password');
+  $username = $app->request->post('username');
 
   // validating email address
   validateEmail($email);
   // validating password 
   validatePass($password);
+  // validating username
+  validateUsername($username);
 
   $db = new DbHandler();
-  $res = $db->createUser($name, $email, $password);
+  $res = $db->createUser($name, $email, $password, $username);
 
   if ($res == USER_CREATED_SUCCESSFULLY) {
     $response["error"] = false;
@@ -54,15 +57,19 @@ $app->post('/register', function() use ($app) {
     // Send the user a registration email
     registrationEmail($email);
     $user = $db->getUserByEmail($email);
-    $response["id"] = $user->id;
+    $response["id"] = $user['id'];
     echoRespnse(201, $response);
   } else if ($res == USER_CREATE_FAILED) {
     $response["error"] = true;
     $response["message"] = "Oops! An error occurred while registering";
     echoRespnse(200, $response);
-  } else if ($res == USER_ALREADY_EXISTED) {
+  } else if ($res == USER_EMAIL_ALREADY_EXISTED) {
     $response["error"] = true;
     $response["message"] = "Sorry, this email already exists";
+    echoRespnse(200, $response);
+  } else if ($res == USER_USERNAME_ALREADY_EXISTED) {
+    $response["error"] = true;
+    $response["message"] = "Sorry, this username already exists";
     echoRespnse(200, $response);
   }
 });
