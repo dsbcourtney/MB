@@ -86,7 +86,8 @@ $app->get('/forgotten-login', function() use ($app) {
 });
 
 $app->get('/account', function() use ($app) {
-
+    $vars = array('title'=>'Account');
+    $app->render('account.twig.html', $vars);
 });
 
 $app->get('/register', function() use ($app) {
