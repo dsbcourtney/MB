@@ -63,6 +63,7 @@ $app->post('/login', function() use ($app) {
         if (!$result->error && $result->id>0) {
             // Login accepted
             // Set sessions
+            $_SESSION[SESSION_VAR.'username'] = $result->username;
             $_SESSION[SESSION_VAR.'userid'] = $result->id;
             // Cookie set
             if ($app->request->post('remember')=='remember-me') {
@@ -86,8 +87,13 @@ $app->get('/forgotten-login', function() use ($app) {
 });
 
 $app->get('/account', function() use ($app) {
-    $vars = array('title'=>'Account');
-    $app->render('account.twig.html', $vars);
+    if (isset($_SESSION[SESSION_VAR.'userid']) && $_SESSION[SESSION_VAR.'userid']>0) {
+        $vars = array('title'=>'Account');
+        $app->render('account.twig.html', $vars);
+    } else {
+        $vars = array('title'=>'Login', 'error'=>1, 'message'=>'You need to be logged in to view this page');
+        $app->render('login.twig.html', $vars);
+    }
 });
 
 $app->get('/register', function() use ($app) {
@@ -105,7 +111,10 @@ $app->post('/register', function() use ($app) {
     $result = postData(URL_API.'/register', $vars);
     if (isset($result)) {
         if (!$result->error) {
-
+            $_SESSION[SESSION_VAR.'username'] = $result->username;
+            $_SESSION[SESSION_VAR.'userid'] = $result->id;
+            header('location:'.URL_HOST.'/account');
+            exit;
         } else {
             $vars = array_merge($vars, array('title'=>'Register', 'error'=>1, 'message'=>$result->message));
             $app->render('register.twig.html', $vars);
