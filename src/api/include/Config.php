@@ -11,7 +11,7 @@ define('DB_NAME', 'mb');
 * Other configuration 
 */ 
 
-define('URL_HOST', 'http://'.(($_SERVER["SERVER_PORT"]!='80')?$_SERVER["SERVER_NAME"].":".$_SERVER["SERVER_PORT"].$_SERVER["REQUEST_URI"]:$_SERVER["SERVER_NAME"].$_SERVER["REQUEST_URI"]));
+define('URL_HOST', 'http://'.(($_SERVER["SERVER_PORT"]!='80')?$_SERVER["SERVER_NAME"].":".$_SERVER["SERVER_PORT"]:$_SERVER["SERVER_NAME"]).'/api/v1');
 
 define('USER_CREATED_SUCCESSFULLY', 0);
 define('USER_CREATE_FAILED', 1);

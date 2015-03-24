@@ -40,12 +40,15 @@ $app->hook('slim.before', function () use ($app) {
 * Home page
 **/
 $app->get('/', function() use ($app) {
-	$app->render('index.twig.html');
+  global $vars;
+  array_push($vars, array('title'=>'Home'));
+	$app->render('index.twig.html', $vars);
 });
 
 $app->get('/login', function() use ($app) {
     // Check to see if they are logged in or not first
-    if (isset($_SESSION[SESSION_VAR.'userid']) && $_SESSION[SESSION_VAR.'userid']>0) {
+    global $vars;
+    if (isset($vars['userid']) && $vars['userid']>0) {
         header('location:'.URL_HOST.'/account');
         exit;
     } else {
@@ -55,6 +58,11 @@ $app->get('/login', function() use ($app) {
 });
 
 $app->post('/login', function() use ($app) {
+  global $vars;
+  if (isset($vars['userid']) && $vars['userid']>0) {  
+    header('location:'.URL_HOST.'/account');
+    exit;    
+  } else {
     $email = $app->request->post('email');
     $password = $app->request->post('password');
     $vars = array('email'=>$email, 'password'=>$password);
@@ -65,6 +73,7 @@ $app->post('/login', function() use ($app) {
             // Set sessions
             $_SESSION[SESSION_VAR.'username'] = $result->username;
             $_SESSION[SESSION_VAR.'userid'] = $result->id;
+            $_SESSION[SESSION_VAR.'userkey'] = $result->apiKey;
             // Cookie set
             if ($app->request->post('remember')=='remember-me') {
                 //setcookie();
@@ -80,6 +89,7 @@ $app->post('/login', function() use ($app) {
         $vars = array('title'=>'Error', 'message'=>'API not working');
         $app->render('error.twig.html', $vars);
     }
+  }
 });
 
 $app->get('/forgotten-login', function() use ($app) {
@@ -87,9 +97,19 @@ $app->get('/forgotten-login', function() use ($app) {
 });
 
 $app->get('/account', function() use ($app) {
-    if (isset($_SESSION[SESSION_VAR.'userid']) && $_SESSION[SESSION_VAR.'userid']>0) {
-        $vars = array('title'=>'Account');
-        $app->render('account.twig.html', $vars);
+    global $vars;
+    if (isset($vars['userid']) && $vars['userid']>0) {
+
+        $headers = array('Authorization: '.$vars['userkey']);
+        $user = getData(URL_API.'/user/'.$vars['userid'], $headers);
+        if (!$user->error) {
+          $vars = array_merge($vars, array('title'=>'Account'));
+          $vars['user'] = $user;
+          $app->render('account.twig.html', $vars);
+        } else {
+          $vars = array('title'=>'Login', 'error'=>1, 'message'=>'You need to be logged in to view this page');
+          $app->render('login.twig.html', $vars);
+        }
     } else {
         $vars = array('title'=>'Login', 'error'=>1, 'message'=>'You need to be logged in to view this page');
         $app->render('login.twig.html', $vars);
@@ -97,11 +117,22 @@ $app->get('/account', function() use ($app) {
 });
 
 $app->get('/register', function() use ($app) {
+  global $vars;
+  if (isset($vars['userid']) && $vars['userid']>0) {  
+    header('location:'.URL_HOST.'/account');
+    exit;    
+  } else {
     $vars = array('title'=>'Register');
     $app->render('register.twig.html', $vars);
+  }
 });
 
 $app->post('/register', function() use ($app) {
+  global $vars;
+  if (isset($vars['userid']) && $vars['userid']>0) {  
+    header('location:'.URL_HOST.'/account');
+    exit;    
+  } else {  
     $name = $app->request->post('name');
     $email = $app->request->post('email');
     $password = $app->request->post('password');
@@ -113,6 +144,7 @@ $app->post('/register', function() use ($app) {
         if (!$result->error) {
             $_SESSION[SESSION_VAR.'username'] = $result->username;
             $_SESSION[SESSION_VAR.'userid'] = $result->id;
+            $_SESSION[SESSION_VAR.'userkey'] = $result->apiKey;
             header('location:'.URL_HOST.'/account');
             exit;
         } else {
@@ -123,6 +155,16 @@ $app->post('/register', function() use ($app) {
         $vars = array('title'=>'Error', 'message'=>'API not working');
         $app->render('error.twig.html', $vars);
     }
+  }
+});
+
+$app->get('/logout', function() use ($app) {
+  $_SESSION[SESSION_VAR.'username'] = '';
+  $_SESSION[SESSION_VAR.'userid'] = 0;
+  unset($_SESSION[SESSION_VAR.'username']);
+  unset($_SESSION[SESSION_VAR.'userid']);  
+  header('location:'.URL_HOST.'/');
+  exit;  
 });
 
 $app->run();

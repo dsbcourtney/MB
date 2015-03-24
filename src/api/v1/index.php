@@ -57,7 +57,9 @@ $app->post('/register', function() use ($app) {
     // Send the user a registration email
     registrationEmail($email);
     $user = $db->getUserByEmail($email);
-    $response["id"] = $user['id'];
+    $response['id'] = $user['id'];
+    $response['username'] = $user['username'];
+    $response['apiKey'] = $user['api_key'];
     echoRespnse(201, $response);
   } else if ($res == USER_CREATE_FAILED) {
     $response["error"] = true;
@@ -185,6 +187,7 @@ $app->post('/login', function() use ($app) {
       $response['email'] = $user['email'];
       $response['apiKey'] = $user['api_key'];
       $response['createdAt'] = $user['created_at'];
+      $response['username'] = $user['username'];
     } else {
       // unknown error occurred
       $response['error'] = true;
@@ -237,6 +240,21 @@ function authenticate(\Slim\Route $route) {
     $app->stop();
   }
 }
+
+/** 
+ * Get user information
+ * all the account information
+*/
+$app->get('/user/:id', 'authenticate', function($userid) {
+
+  $db = new DbHandler();
+  $user = $db->getUserById($userid);
+  $response["user"] = $user;
+  $response["error"] = false;
+  $response["message"] = "Success";
+  echoRespnse(201, $response);
+
+});
 
 /**
  * Creating new task in db

@@ -147,6 +147,23 @@ class DbHandler {
   }
 
   /**
+   * Fetching user by id
+   * @param String $id User 
+   */
+  public function getUserById($id) {
+    $stmt = $this->conn->prepare("SELECT id, name, email, username, api_key, status, created_at, validate_email, reset_password FROM users WHERE id = ?");
+    $stmt->bind_param("i", $id);
+    if ($stmt->execute()) {
+      $user = $stmt->get_result()->fetch_assoc();
+      $stmt->close();
+      return $user;
+    } else {
+      return NULL;
+    }
+  }
+
+
+  /**
   * Update the user
   * @param pass the $user you get from getUserByEmail or such function
   */

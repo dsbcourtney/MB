@@ -14,3 +14,8 @@ define('URL_HOST', 'http://'.(($_SERVER["SERVER_PORT"]!='80')?$_SERVER["SERVER_N
 $template_array = array();
 $template_array['site_title'] = ' - Mates Bet'; 
 $template_array['base_url'] = URL_HOST;
+
+$vars = array();
+$vars['userid'] = (isset($_SESSION[SESSION_VAR.'userid']) && $_SESSION[SESSION_VAR.'userid'])?$_SESSION[SESSION_VAR.'userid']:0;
+$vars['username'] = (isset($_SESSION[SESSION_VAR.'username']) && $_SESSION[SESSION_VAR.'username'])?$_SESSION[SESSION_VAR.'username']:'';
+$vars['userkey'] = (isset($_SESSION[SESSION_VAR.'userkey']) && $_SESSION[SESSION_VAR.'userkey'])?$_SESSION[SESSION_VAR.'userkey']:'';
