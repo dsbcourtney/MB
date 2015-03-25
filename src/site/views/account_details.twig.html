@@ -1,0 +1,55 @@
+{% extends "layouts/left_column.twig.html" %}
+{% block title %}{{title}}{% endblock %}
+{% block leftcol %}
+<div class="list-group">
+  <a href="{{base_url}}/account" class="list-group-item">Account</a>
+  <a href="{{base_url}}/account/details" class="list-group-item active">Details</a>
+  <a href="#" class="list-group-item">Mates</a>
+  <a href="#" class="list-group-item">Bets</a>      
+</div>
+{% endblock %}
+{% block content %}
+	<div class="page-header">
+		<h1>Account <small>Details</small></h1>
+	</div>
+	{% if user.validate_email != 1 %}
+	<div class="alert alert-warning alert-dismissible" role="alert">
+	    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+		<strong>Warning!</strong> Please validate your email address. If you never received the email please <a href="{{base_url}}/" class="alert-link">click here</a> to send it again.
+	</div>
+	{% endif %}
+	{% if success == 1 %}
+	<div class="alert alert-success alert-dismissible" role="alert">
+	    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+		<strong>Success!</strong> {{message}}
+	</div>
+	{% endif %}	
+	<form class="form-update" action="{{base_url}}/account/details" method="post">
+		<div class="form-group">
+			<label>Name</label>
+			<input type="text" class="form-control" placeholder="Enter your name" name="name" value="{{object.user.name}}" required>
+		</div>	
+		<div class="form-group">
+			<label>Username</label>
+    		<div class="input-group">
+		      	<span class="input-group-addon">@</span>			
+				<input type="text" class="form-control" placeholder="Enter your username" data-minlength="4" name="username" value="{{object.user.username}}" required>
+			</div>
+			<span class="help-block">Minimum of 4 characters</span>
+		</div>
+		<div class="form-group">
+			<label>Email address</label>
+			<input type="email" class="form-control" placeholder="Enter your email address" name="email" value="{{object.user.email}}" data-error="Email address entered is invalid" required>
+			<div class="help-block with-errors"></div>
+		</div>
+		<button type="submit" class="btn btn-primary">Save</button>
+	</form>
+{% endblock %}
+
+{% block java %}
+<script>
+  $(document).ready(function(){
+    $('.form-update').validator();
+  });
+</script>
+{% endblock %}
