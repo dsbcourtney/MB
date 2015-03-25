@@ -6,7 +6,6 @@ require_once '../include/Config.php';
 require_once '../include/Functions.php';
 require '../libs/vendor/autoload.php';
 
-
 $logWriter = new \Slim\Extras\Log\DateTimeFileWriter(array(
   'path' => LOG_LOCATION,
   'name_format' => 'Y-m-d',

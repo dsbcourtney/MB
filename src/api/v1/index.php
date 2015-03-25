@@ -258,12 +258,28 @@ $app->get('/user/:id', 'authenticate', function($userid) {
 
 
 $app->post('/user/update', 'authenticate', function() use ($app) {
+
+  verifyRequiredParams(array('name', 'email', 'username'));
+
   $email = $app->request()->post('email');
   $name = $app->request()->post('name');
   $username = $app->request()->post('username');
+
+  // validating email address
+  validateEmail($email);
+  // validating username
+  validateUsername($username);
+
   $userid = $app->request()->post('id');
   $db = new DbHandler();
+
   $user = $db->getUserById($userid);
+  
+  $user['email'] = $email;
+  $user['name'] = $name;
+  $user['username'] = $username;
+  $db->updateUser($user);
+
   $response["user"] = $user;
   $response["error"] = false;
   $response["message"] = "Success";
