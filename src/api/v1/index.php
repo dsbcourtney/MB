@@ -256,6 +256,20 @@ $app->get('/user/:id', 'authenticate', function($userid) {
 
 });
 
+
+$app->post('/user/update', 'authenticate', function() use ($app) {
+  $email = $app->request()->post('email');
+  $name = $app->request()->post('name');
+  $username = $app->request()->post('username');
+  $userid = $app->request()->post('id');
+  $db = new DbHandler();
+  $user = $db->getUserById($userid);
+  $response["user"] = $user;
+  $response["error"] = false;
+  $response["message"] = "Success";
+  echoRespnse(201, $response);
+});
+
 /**
  * Creating new task in db
  * method POST
