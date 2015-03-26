@@ -12,7 +12,7 @@ define('URL_HOST', 'http://'.(($_SERVER["SERVER_PORT"]!='80')?$_SERVER["SERVER_N
 
 // Template config variables
 $template_array = array();
-$template_array['site_title'] = ' - Mates Bet'; 
+$template_array['site_title'] = ''; 
 $template_array['base_url'] = URL_HOST;
 
 $vars = array();

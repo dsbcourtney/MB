@@ -1,0 +1,10 @@
+{% extends "layouts/single_column.twig.html" %}
+
+{% block title %}{{title}}{% endblock %}
+{% block content %}
+  <div class="alert-div">
+    <div class="alert alert-{{alert}}" role="alert">
+      <strong>{{heading}}</strong> {{message}}
+    </div>
+  </div>
+{% endblock %}

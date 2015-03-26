@@ -41,6 +41,8 @@ $app->post('/register', function() use ($app) {
   $password = $app->request->post('password');
   $username = $app->request->post('username');
 
+  $validateUrl = $app->request->post('validateUrl');
+
   // validating email address
   validateEmail($email);
   // validating password 
@@ -55,7 +57,7 @@ $app->post('/register', function() use ($app) {
     $response["error"] = false;
     $response["message"] = "You are successfully registered";
     // Send the user a registration email
-    registrationEmail($email);
+    registrationEmail($email, $validateUrl);
     $user = $db->getUserByEmail($email);
     $response['id'] = $user['id'];
     $response['username'] = $user['username'];
@@ -99,6 +101,10 @@ $app->get('/validate/email', function() use ($app) {
     $response["error"] = true;
     $response["message"] = "Sorry, validation failed";
     echoRespnse(200, $response);
+  } elseif ($res == VALIDATION_NOT_NEEDED) {
+    $response["error"] = false;
+    $response["message"] = "Validation already successful";
+    echoRespnse(201, $response);    
   }
 
 });

@@ -106,7 +106,7 @@ function echoRespnse($status_code, $response) {
 * Send registration email
 * @param Email used within registration
 */
-function registrationEmail($email) {
+function registrationEmail($email, $validateUrl='') {
   $app = \Slim\Slim::getInstance();
   $db = new DbHandler();
   // Check to see if its been sent before or not
@@ -122,8 +122,11 @@ function registrationEmail($email) {
       $message = str_replace("%users_name%", $user['name'], $message);
       $message = str_replace("%users_email%", $user['email'], $message);
       $message = str_replace("%users_username%", $user['username'], $message);
-      $message = str_replace("%url_validate_email%", URL_VALIDATE_EMAIL.'?ident='.$user['id'].$randomString, $message);
-
+      if ($validateUrl=='') {
+        $message = str_replace("%url_validate_email%", URL_VALIDATE_EMAIL.'?ident='.$user['id'].$randomString, $message);
+      } else {
+        $message = str_replace("%url_validate_email%", $validateUrl.'?ident='.$user['id'].$randomString, $message);
+      }
       $mail = new PHPMailer;
       $mail->IsSMTP();
       $mail->setFrom(EMAIL_FROM, EMAIL_FROM_NAME);

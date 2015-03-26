@@ -183,7 +183,7 @@ $app->post('/register', function() use ($app) {
     $password = $app->request->post('password');
     $username = $app->request->post('username');
 
-    $vars = array('name'=>$name, 'email'=>$email, 'password'=>$password, 'username'=>$username);
+    $vars = array('name'=>$name, 'email'=>$email, 'password'=>$password, 'username'=>$username, 'validateUrl'=>URL_HOST.'/account/validate');
     $result = postData(URL_API.'/register', $vars);
     if (isset($result)) {
       if (!$result->error) {
@@ -201,6 +201,25 @@ $app->post('/register', function() use ($app) {
       $app->render('error.twig.html', $vars);
     }
   }
+});
+
+/**
+* Validate account from email address
+**/
+$app->get('/account/validate', function() use ($app) {
+  global $vars;
+  $ident = $app->request->get('ident');
+  $result = getData(URL_API.'/validate/email?ident='.$ident);
+  if (isset($result)) {
+    if ($result->error) {
+      $vars = array('title'=>'Validate','alert'=>'danger', 'heading'=>'Whoops!', 'message'=>$result->message);
+      $app->render('alert.twig.html', $vars);
+    } else {
+      $vars = array('title'=>'Validate','alert'=>'success', 'heading'=>'Success!', 'message'=>$result->message);
+      $app->render('alert.twig.html', $vars);
+    }
+  }
+
 });
 
 $app->get('/logout', function() use ($app) {
