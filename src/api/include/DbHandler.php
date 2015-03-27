@@ -33,10 +33,10 @@ class DbHandler {
     // First check if user already existed in db
     if ($this->isUserExistsEmail($email)) {
       $doCreate = false;
-      return USER_EMAIL_ALREADY_EXISTED;
+      return USER_EMAIL_ALREADY_EXISTS;
     } elseif ($this->isUserExistsUsername($username)) {
       $doCreate = false;
-      return USER_USERNAME_ALREADY_EXISTED;
+      return USER_USERNAME_ALREADY_EXISTS;
     }
 
     if ($doCreate) {
@@ -103,11 +103,12 @@ class DbHandler {
   /**
    * Checking for duplicate user by email address
    * @param String $email email to check in db
+   * @param Integer $id if updating email we don't check the users row for the same email   
    * @return boolean
    */
-  private function isUserExistsEmail($email) {
-    $stmt = $this->conn->prepare("SELECT id from users WHERE email = ?");
-    $stmt->bind_param("s", $email);
+  private function isUserExistsEmail($email, $id=0) {
+    $stmt = $this->conn->prepare("SELECT id from users WHERE email = ? AND id <> ? ");
+    $stmt->bind_param("si", $email, $id);
     $stmt->execute();
     $stmt->store_result();
     $num_rows = $stmt->num_rows;
@@ -118,11 +119,12 @@ class DbHandler {
   /**
    * Checking for duplicate user by username
    * @param String $username to check in db
+   * @param Integer $id if updating username we don't check the users row for the same username
    * @return boolean
    */
-  private function isUserExistsUsername($username) {
-    $stmt = $this->conn->prepare("SELECT id from users WHERE username = ?");
-    $stmt->bind_param("s", $username);
+  private function isUserExistsUsername($username, $id=0) {
+    $stmt = $this->conn->prepare("SELECT id from users WHERE username = ? AND id <> ? ");
+    $stmt->bind_param("si", $username, $id);
     $stmt->execute();
     $stmt->store_result();
     $num_rows = $stmt->num_rows;
@@ -148,7 +150,7 @@ class DbHandler {
 
   /**
    * Fetching user by id
-   * @param String $id User 
+   * @param Integer $id User 
    */
   public function getUserById($id) {
     $stmt = $this->conn->prepare("SELECT id, name, email, username, api_key, status, created_at, validate_email, reset_password FROM users WHERE id = ?");
@@ -162,16 +164,52 @@ class DbHandler {
     }
   }
 
+  /**
+   * Fetching user by username
+   * @param String $username User 
+   */
+  public function getUserByUsername($username) {
+    $stmt = $this->conn->prepare("SELECT id, name, email, username, api_key, status, created_at, validate_email, reset_password FROM users WHERE username = ?");
+    $stmt->bind_param("s", $username);
+    if ($stmt->execute()) {
+      $user = $stmt->get_result()->fetch_assoc();
+      $stmt->close();
+      return $user;
+    } else {
+      return NULL;
+    }
+  }  
+
 
   /**
   * Update the user
-  * @param pass the $user you get from getUserByEmail or such function
+  * @param pass the $user you get from getUserByEmail or such function, 
   */
   public function updateUser($user) {
-    $update = $this->conn->prepare("UPDATE users SET name = ?, status = ?, validate_email = ?, reset_password = ? WHERE id = ?");
-    $update->bind_param("sissi", $user['name'], $user['status'], $user['validate_email'], $user['reset_password'], $user['id']);    
-    $update->execute();
-    $update->close();
+
+    $doUpdate = true;
+    if ($this->isUserExistsUsername($user['username'], $user['id'])) {
+      $doUpdate = false;
+      return USER_USERNAME_ALREADY_EXISTS;
+    } elseif ($this->isUserExistsEmail($user['email'], $user['id'])) {
+      $doUpdate = false;
+      return USER_EMAIL_ALREADY_EXISTS;
+    } 
+
+    if ($doUpdate) {
+      $update = $this->conn->prepare("UPDATE users SET name = ?, username = ?, status = ?, validate_email = ?, reset_password = ? WHERE id = ?");
+      $update->bind_param("ssissi", $user['name'], $user['username'], $user['status'], $user['validate_email'], $user['reset_password'], $user['id']);    
+      // Check for successful update
+      if ($update->execute()) {
+        // User successfully inserted
+        return USER_UPDATE_SUCCESSFUL;
+      } else {
+        // Failed to update user
+        return USER_UPDATE_FAILED;
+      }
+      $update->close();
+
+    }
   }
 
   /**

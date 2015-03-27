@@ -24,6 +24,45 @@ $app = new \Slim\Slim(array(
 $user_id = NULL;
 
 /**
+ * Adding Middle Layer to authenticate every request
+ * Checking if the request has valid api key in the 'Authorization' header
+ */
+function authenticate(\Slim\Route $route) {
+  // Getting request headers
+  $headers = apache_request_headers();
+  $response = array();
+  $app = \Slim\Slim::getInstance();
+
+  // Verifying Authorization Header
+  if (isset($headers['Authorization'])) {
+    $db = new DbHandler();
+
+    // get the api key
+    $api_key = $headers['Authorization'];
+    // validating api key
+    if (!$db->isValidApiKey($api_key)) {
+      // api key is not present in users table
+      $response["error"] = true;
+      $response["message"] = "Access Denied. Invalid Api key";
+      echoRespnse(401, $response);
+      $app->stop();
+    } else {
+      global $user_id;
+      // get user primary key id
+      $user = $db->getUserId($api_key);
+      if ($user != NULL)
+        $user_id = $user["id"];
+    }
+  } else {
+    // api key is missing in header
+    $response["error"] = true;
+    $response["message"] = "Api key is misssing";
+    echoRespnse(400, $response);
+    $app->stop();
+  }
+}
+
+/**
  * User Registration
  * url - /register
  * method - POST
@@ -40,7 +79,6 @@ $app->post('/register', function() use ($app) {
   $email = $app->request->post('email');
   $password = $app->request->post('password');
   $username = $app->request->post('username');
-
   $validateUrl = $app->request->post('validateUrl');
 
   // validating email address
@@ -67,11 +105,11 @@ $app->post('/register', function() use ($app) {
     $response["error"] = true;
     $response["message"] = "Oops! An error occurred while registering";
     echoRespnse(200, $response);
-  } else if ($res == USER_EMAIL_ALREADY_EXISTED) {
+  } else if ($res == USER_EMAIL_ALREADY_EXISTS) {
     $response["error"] = true;
     $response["message"] = "Sorry, this email already exists";
     echoRespnse(200, $response);
-  } else if ($res == USER_USERNAME_ALREADY_EXISTED) {
+  } else if ($res == USER_USERNAME_ALREADY_EXISTS) {
     $response["error"] = true;
     $response["message"] = "Sorry, this username already exists";
     echoRespnse(200, $response);
@@ -208,44 +246,7 @@ $app->post('/login', function() use ($app) {
   echoRespnse(200, $response);
 });
 
-/**
- * Adding Middle Layer to authenticate every request
- * Checking if the request has valid api key in the 'Authorization' header
- */
-function authenticate(\Slim\Route $route) {
-  // Getting request headers
-  $headers = apache_request_headers();
-  $response = array();
-  $app = \Slim\Slim::getInstance();
 
-  // Verifying Authorization Header
-  if (isset($headers['Authorization'])) {
-    $db = new DbHandler();
-
-    // get the api key
-    $api_key = $headers['Authorization'];
-    // validating api key
-    if (!$db->isValidApiKey($api_key)) {
-      // api key is not present in users table
-      $response["error"] = true;
-      $response["message"] = "Access Denied. Invalid Api key";
-      echoRespnse(401, $response);
-      $app->stop();
-    } else {
-      global $user_id;
-      // get user primary key id
-      $user = $db->getUserId($api_key);
-      if ($user != NULL)
-        $user_id = $user["id"];
-    }
-  } else {
-    // api key is missing in header
-    $response["error"] = true;
-    $response["message"] = "Api key is misssing";
-    echoRespnse(400, $response);
-    $app->stop();
-  }
-}
 
 /** 
  * Get user information
@@ -263,33 +264,68 @@ $app->get('/user/:id', 'authenticate', function($userid) {
 });
 
 
+/** 
+* Update user, needs to have the apikey to do so 
+**/
 $app->post('/user/update', 'authenticate', function() use ($app) {
 
   verifyRequiredParams(array('name', 'email', 'username'));
 
+  $userid = $app->request()->post('id');
   $email = $app->request()->post('email');
   $name = $app->request()->post('name');
   $username = $app->request()->post('username');
+  $validateUrl = $app->request->post('validateUrl');
 
   // validating email address
   validateEmail($email);
   // validating username
   validateUsername($username);
 
-  $userid = $app->request()->post('id');
   $db = new DbHandler();
 
   $user = $db->getUserById($userid);
+
+  $emailChange = ($user['email']!=$email)?true:false; // User is changing his email address !
+  $oldEmail = $user['email'];
   
   $user['email'] = $email;
   $user['name'] = $name;
   $user['username'] = $username;
-  $db->updateUser($user);
+  $res = $db->updateUser($user);
 
-  $response["user"] = $user;
-  $response["error"] = false;
-  $response["message"] = "Success";
-  echoRespnse(201, $response);
+  if ($res == USER_UPDATE_SUCCESSFUL) {
+
+    if ($emailChange) { // Send email to old address and then registration email to new one
+      //inform of email change
+      //emailChangeEmail($oldEmail); // Not created yet
+      registrationEmail($email, $validateUrl, $emailChange);
+    }
+    $user = $db->getUserById($userid);
+    $response["user"] = $user;
+    $response["error"] = false;
+    $response["message"] = "Your details have been updated";
+    echoRespnse(201, $response);
+  } elseif ($res == USER_UPDATE_FAILED) {
+    $user = $db->getUserById($userid);
+    $response["user"] = $user;
+    $response["error"] = true;
+    $response["message"] = "Oops! An error occurred while updating";
+    echoRespnse(200, $response);
+  } elseif ($res == USER_USERNAME_ALREADY_EXISTS) {
+    $user = $db->getUserById($userid);
+    $response["user"] = $user;
+    $response["error"] = true;
+    $response["message"] = "Sorry, the username '".$username."' already exists";
+    echoRespnse(200, $response);
+  } elseif ($res == USER_EMAIL_ALREADY_EXISTS) {
+    $user = $db->getUserById($userid);
+    $response["user"] = $user;
+    $response["error"] = true;
+    $response["message"] = "Sorry, the email '".$email."' already exists";
+    echoRespnse(200, $response);
+  }
+
 });
 
 /**

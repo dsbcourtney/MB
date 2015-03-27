@@ -37,3 +37,26 @@ function getData($url, $headers=array()) {
 	return json_decode(curl_exec($ch));
 	curl_close($ch);
 }
+
+/**
+* Turns value into more descriptive log value 
+* @param Log value
+* @param Error type
+* $app->log->debug(logValue($val, $type));
+* $app->log->info(logValue($val, $type));
+* $app->log->notice(logValue($val, $type));
+* $app->log->warning(logValue($val, $type));
+* $app->log->error(logValue($val, $type));
+* $app->log->critical(logValue($val, $type));
+* $app->log->alert(logValue($val, $type));
+* $app->log->emergency(logValue($val, $type));
+*/
+function logValue($val, $errtype) {
+  $errtype = strtolower($errtype);
+  if ($errtype=='alert') {
+    // SEND EMAIL ALERT TO ME
+  } elseif ($errtype=='emergency') {
+    // DO SOMETHING MORE LIKE RING ME OR SOMETHING?!
+  }
+  return date('Y-m-d H:i:s', time()).' - '.ucwords($errtype).' - '.$val;
+}

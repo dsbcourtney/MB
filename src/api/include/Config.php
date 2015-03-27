@@ -15,11 +15,12 @@ define('URL_HOST', 'http://'.(($_SERVER["SERVER_PORT"]!='80')?$_SERVER["SERVER_N
 
 define('USER_CREATED_SUCCESSFULLY', 0);
 define('USER_CREATE_FAILED', 1);
-define('USER_EMAIL_ALREADY_EXISTED', 2);
-define('USER_USERNAME_ALREADY_EXISTED', 3);
-
-define('VALIDATION_SUCCESS', 1);
-define('VALIDATION_FAILURE', 0);
+define('USER_EMAIL_ALREADY_EXISTS', 2);
+define('USER_USERNAME_ALREADY_EXISTS', 3);
+define('USER_UPDATE_SUCCESSFUL', 4);
+define('USER_UPDATE_FAILED', 5);
+define('VALIDATION_SUCCESS', 6);
+define('VALIDATION_FAILURE', 7);
 
 /* Log location */
 define('LOG_LOCATION', '../logs');

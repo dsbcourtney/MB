@@ -106,14 +106,14 @@ function echoRespnse($status_code, $response) {
 * Send registration email
 * @param Email used within registration
 */
-function registrationEmail($email, $validateUrl='') {
+function registrationEmail($email, $validateUrl='', $emailChange=false) {
   $app = \Slim\Slim::getInstance();
   $db = new DbHandler();
   // Check to see if its been sent before or not
   $user = $db->getUserByEmail($email);
   if ($user != NULL) {
 
-    if ($user['validate_email']!=1) { // Not validated yet
+    if ($user['validate_email']!=1 || $emailChange) { // Not validated yet
 
       // Create validation hash
       $randomString = randomString(20);
@@ -147,12 +147,14 @@ function registrationEmail($email, $validateUrl='') {
     } else {
       $response["error"] = true;
       $response["message"] = 'Email address already validated';    
+      return $response;
       $app->stop();     
     }
 
   } else {
     $response["error"] = true;
     $response["message"] = 'User could not be found to send the registration email';    
+    return $response;
     $app->stop();
   }
 }

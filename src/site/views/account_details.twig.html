@@ -12,19 +12,20 @@
 	<div class="page-header">
 		<h1>Account <small>Details</small></h1>
 	</div>
-	{% if user.validate_email != 1 %}
+	{% if object.user.validate_email != 1 %}
 	<div class="alert alert-warning alert-dismissible" role="alert">
 	    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 		<strong>Warning!</strong> Please validate your email address. If you never received the email please <a href="{{base_url}}/" class="alert-link">click here</a> to send it again.
 	</div>
 	{% endif %}
-	{% if success == 1 %}
-	<div class="alert alert-success alert-dismissible" role="alert">
+	{% if message != "" %}
+	<div class="alert alert-{% if error == 1 %}danger{% else %}success{% endif %} alert-dismissible" role="alert">
 	    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-		<strong>Success!</strong> {{message}}
+		<strong>{% if error == 1 %}Error{% else %}Success{% endif %}!</strong> {{message}}
 	</div>
 	{% endif %}	
 	<form class="form-update" action="{{base_url}}/account/details" method="post">
+		<input type="hidden" name="validateUrl" value="{{base_url}}/account/validate">
 		<div class="form-group">
 			<label>Name</label>
 			<input type="text" class="form-control" placeholder="Enter your name" name="name" value="{{object.user.name}}" required>
