@@ -105,22 +105,21 @@ function echoRespnse($status_code, $response) {
 /**
 * Send registration email
 * @param Email used within registration
+* @param User object array
+* @param validateUrl Is the url that will get parsed into the email 
 */
-function registrationEmail($email, $validateUrl='', $emailChange=false) {
+function registrationEmail($email, $user, $validateUrl='') {
   $app = \Slim\Slim::getInstance();
   $db = new DbHandler();
-  // Check to see if its been sent before or not
-  $user = $db->getUserByEmail($email);
   if ($user != NULL) {
-
-    if ($user['validate_email']!=1 || $emailChange) { // Not validated yet
+    if ($user['status']==1) { // Not validated yet
 
       // Create validation hash
       $randomString = randomString(20);
 
       $message = file_get_contents('../templates/registration_email.html');
       $message = str_replace("%users_name%", $user['name'], $message);
-      $message = str_replace("%users_email%", $user['email'], $message);
+      $message = str_replace("%users_email%", $email, $message);
       $message = str_replace("%users_username%", $user['username'], $message);
       if ($validateUrl=='') {
         $message = str_replace("%url_validate_email%", URL_VALIDATE_EMAIL.'?ident='.$user['id'].$randomString, $message);
@@ -131,7 +130,7 @@ function registrationEmail($email, $validateUrl='', $emailChange=false) {
       $mail->IsSMTP();
       $mail->setFrom(EMAIL_FROM, EMAIL_FROM_NAME);
       $mail->addReplyTo(EMAIL_REPLY, EMAIL_REPLY_NAME);
-      $mail->addAddress($user['email'], $user['name']);
+      $mail->addAddress($email, $user['name']);
       $mail->Subject = 'Matesbet Registration';
       $mail->msgHTML($message);
       $mail->AltBody = ''; // Body if they don't except html. Some mobiles etc may use this
@@ -141,6 +140,7 @@ function registrationEmail($email, $validateUrl='', $emailChange=false) {
       } else {
         // Update database to send welcome and verification email has been sent
         $user['validate_email'] = $randomString;
+        $user['validate_count']++;
         $db->updateUser($user);
       }
 

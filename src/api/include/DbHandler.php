@@ -5,6 +5,8 @@
  * This class will have CRUD methods for database tables
  *
  * @author David Courtney
+ * @param User status, 1, registered, 2 account verified
+ * @param User active, 1 or 0
  */
 class DbHandler {
  
@@ -137,7 +139,7 @@ class DbHandler {
    * @param String $email User email id
    */
   public function getUserByEmail($email) {
-    $stmt = $this->conn->prepare("SELECT id, name, email, username, api_key, status, created_at, validate_email, reset_password FROM users WHERE email = ?");
+    $stmt = $this->conn->prepare("SELECT id, name, email, username, api_key, status, created_at, validate_email, validate_count, reset_password, active FROM users WHERE email = ?");
     $stmt->bind_param("s", $email);
     if ($stmt->execute()) {
       $user = $stmt->get_result()->fetch_assoc();
@@ -153,7 +155,7 @@ class DbHandler {
    * @param Integer $id User 
    */
   public function getUserById($id) {
-    $stmt = $this->conn->prepare("SELECT id, name, email, username, api_key, status, created_at, validate_email, reset_password FROM users WHERE id = ?");
+    $stmt = $this->conn->prepare("SELECT id, name, email, username, api_key, status, created_at, validate_email, validate_count, reset_password, active FROM users WHERE id = ?");
     $stmt->bind_param("i", $id);
     if ($stmt->execute()) {
       $user = $stmt->get_result()->fetch_assoc();
@@ -169,7 +171,7 @@ class DbHandler {
    * @param String $username User 
    */
   public function getUserByUsername($username) {
-    $stmt = $this->conn->prepare("SELECT id, name, email, username, api_key, status, created_at, validate_email, reset_password FROM users WHERE username = ?");
+    $stmt = $this->conn->prepare("SELECT id, name, email, username, api_key, status, created_at, validate_email, validate_count, reset_password, active FROM users WHERE username = ?");
     $stmt->bind_param("s", $username);
     if ($stmt->execute()) {
       $user = $stmt->get_result()->fetch_assoc();
@@ -184,6 +186,7 @@ class DbHandler {
   /**
   * Update the user
   * @param pass the $user you get from getUserByEmail or such function, 
+  * Only put what we want in the query that we want the user to be able to update
   */
   public function updateUser($user) {
 
@@ -197,8 +200,8 @@ class DbHandler {
     } 
 
     if ($doUpdate) {
-      $update = $this->conn->prepare("UPDATE users SET name = ?, username = ?, status = ?, validate_email = ?, reset_password = ? WHERE id = ?");
-      $update->bind_param("ssissi", $user['name'], $user['username'], $user['status'], $user['validate_email'], $user['reset_password'], $user['id']);    
+      $update = $this->conn->prepare("UPDATE users SET name = ?, username = ?, email = ?, status = ?, validate_email = ?, validate_count = ?, reset_password = ?, active = ? WHERE id = ?");
+      $update->bind_param("sssissiii", $user['name'], $user['username'], $user['email'], $user['status'], $user['validate_email'], $user['validate_count'], $user['reset_password'], $user['active'], $user['id']);    
       // Check for successful update
       if ($update->execute()) {
         // User successfully inserted
@@ -218,7 +221,7 @@ class DbHandler {
   * @param validate_email
   */
   public function validateUser($userid, $validate_email) {
-    $update = $this->conn->prepare("UPDATE users SET validate_email = 1 WHERE id = ? AND validate_email = ?");
+    $update = $this->conn->prepare("UPDATE users SET validate_email = 1, status = 2 WHERE id = ? AND validate_email = ?");
     $update->bind_param("is", $userid, $validate_email);
     $update->execute();
     $result = $update->affected_rows;

@@ -12,10 +12,10 @@
 	<div class="page-header">
 		<h1>Account</h1>
 	</div>
-	{% if object.user.validate_email != 1 %}
+	{% if object.user.status == 1 %}
 	<div class="alert alert-warning alert-dismissible" role="alert">
 	    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-		<strong>Warning!</strong> Please validate your email address. If you never received the email please <a href="{{base_url}}/" class="alert-link">click here</a> to send it again.
+		<strong>Warning!</strong> Please validate your email address. If you never received the email please <a href="{{base_url}}/account/validation/email" class="alert-link">click here</a> to send it again.
 	</div>
 	{% endif %}
 	<div class="well">

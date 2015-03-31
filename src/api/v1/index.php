@@ -95,8 +95,8 @@ $app->post('/register', function() use ($app) {
     $response["error"] = false;
     $response["message"] = "You are successfully registered";
     // Send the user a registration email
-    registrationEmail($email, $validateUrl);
     $user = $db->getUserByEmail($email);
+    registrationEmail($email, $user, $validateUrl);
     $response['id'] = $user['id'];
     $response['username'] = $user['username'];
     $response['apiKey'] = $user['api_key'];
@@ -148,6 +148,27 @@ $app->get('/validate/email', function() use ($app) {
 });
 
 /**
+* Re send validate email
+* url - /validation/email
+* @param 
+*/
+$app->get('/validation/email/:id', 'authenticate', function($userid) use ($app) {
+  $db = new DbHandler();
+  $user = $db->getUserById($userid);
+  if ($user != NULL) {
+    $validateUrl = ($app->request->get('validateUrl')!==NULL)?$app->request->get('validateUrl'):'';
+    registrationEmail($user['email'], $user, $validateUrl);
+    $response['error'] = false;
+    $response['message'] = 'Registration email re-sent';
+    $response['user'] = $user;  
+  } else {
+    $response['error'] = true;
+    $response['message'] = 'Account not found';  
+  }
+  echoRespnse(200, $response);
+});
+
+/**
 * Forgotten Login
 * url - /forgotten-login
 * method - POST
@@ -168,7 +189,6 @@ $app->post('/forgotten/login', function() use ($app) {
     $response['error'] = true;
     $response['message'] = 'Account not found';      
   }
-
   echoRespnse(200, $response);
 });
 
@@ -271,10 +291,10 @@ $app->post('/user/update', 'authenticate', function() use ($app) {
 
   verifyRequiredParams(array('name', 'email', 'username'));
 
-  $userid = $app->request()->post('id');
-  $email = $app->request()->post('email');
-  $name = $app->request()->post('name');
-  $username = $app->request()->post('username');
+  $userid = $app->request->post('id');
+  $email = $app->request->post('email');
+  $name = $app->request->post('name');
+  $username = $app->request->post('username');
   $validateUrl = $app->request->post('validateUrl');
 
   // validating email address
@@ -283,47 +303,59 @@ $app->post('/user/update', 'authenticate', function() use ($app) {
   validateUsername($username);
 
   $db = new DbHandler();
-
   $user = $db->getUserById($userid);
 
-  $emailChange = ($user['email']!=$email)?true:false; // User is changing his email address !
-  $oldEmail = $user['email'];
-  
-  $user['email'] = $email;
-  $user['name'] = $name;
-  $user['username'] = $username;
-  $res = $db->updateUser($user);
+  if ($user['status']>1) {
 
-  if ($res == USER_UPDATE_SUCCESSFUL) {
-
-    if ($emailChange) { // Send email to old address and then registration email to new one
-      //inform of email change
-      //emailChangeEmail($oldEmail); // Not created yet
-      registrationEmail($email, $validateUrl, $emailChange);
+    $emailChange = false;
+    if ($user['email']!=$email) {
+      $emailChange = true; // User is changing his email address !
+      $user['status'] = 1;
     }
-    $user = $db->getUserById($userid);
-    $response["user"] = $user;
-    $response["error"] = false;
-    $response["message"] = "Your details have been updated";
-    echoRespnse(201, $response);
-  } elseif ($res == USER_UPDATE_FAILED) {
-    $user = $db->getUserById($userid);
+
+    $oldEmail = $user['email'];
+    $user['email'] = $email;
+    $user['name'] = $name;
+    $user['username'] = $username;
+    $res = $db->updateUser($user);
+
+    if ($res == USER_UPDATE_SUCCESSFUL) {
+
+      if ($emailChange) { // Send email to old address and then registration email to new one
+        //inform of email change
+        //emailChangeEmail($user['email']); // Not created yet
+        registrationEmail($email, $user, $validateUrl);
+      }
+      $user = $db->getUserById($userid);
+      $response["user"] = $user;
+      $response["error"] = false;
+      $response["message"] = "Your details have been updated";
+      echoRespnse(201, $response);
+    } elseif ($res == USER_UPDATE_FAILED) {
+      $user = $db->getUserById($userid);
+      $response["user"] = $user;
+      $response["error"] = true;
+      $response["message"] = "Oops! An error occurred while updating";
+      echoRespnse(200, $response);
+    } elseif ($res == USER_USERNAME_ALREADY_EXISTS) {
+      $user = $db->getUserById($userid);
+      $response["user"] = $user;
+      $response["error"] = true;
+      $response["message"] = "Sorry, the username '".$username."' already exists";
+      echoRespnse(200, $response);
+    } elseif ($res == USER_EMAIL_ALREADY_EXISTS) {
+      $user = $db->getUserById($userid);
+      $response["user"] = $user;
+      $response["error"] = true;
+      $response["message"] = "Sorry, the email '".$email."' already exists";
+      echoRespnse(200, $response);
+    }
+
+  } else {
     $response["user"] = $user;
     $response["error"] = true;
-    $response["message"] = "Oops! An error occurred while updating";
-    echoRespnse(200, $response);
-  } elseif ($res == USER_USERNAME_ALREADY_EXISTS) {
-    $user = $db->getUserById($userid);
-    $response["user"] = $user;
-    $response["error"] = true;
-    $response["message"] = "Sorry, the username '".$username."' already exists";
-    echoRespnse(200, $response);
-  } elseif ($res == USER_EMAIL_ALREADY_EXISTS) {
-    $user = $db->getUserById($userid);
-    $response["user"] = $user;
-    $response["error"] = true;
-    $response["message"] = "Sorry, the email '".$email."' already exists";
-    echoRespnse(200, $response);
+    $response["message"] = "Sorry, you need to validate your account via the email we sent you in order to edit your details";
+    echoRespnse(200, $response);   
   }
 
 });

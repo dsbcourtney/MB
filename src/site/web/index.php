@@ -197,8 +197,9 @@ $app->post('/account/details', 'authenticate', function() use ($app) {
   $name = $app->request->post('name');
   $email = $app->request->post('email');
   $username = $app->request->post('username');
+  $validateUrl = $app->request->post('validateUrl');
   $headers = array('Authorization: '.$vars['userkey']);
-  $vars = array('id'=>$vars['userid'], 'name'=>$name, 'email'=>$email, 'username'=>$username);
+  $vars = array('id'=>$vars['userid'], 'name'=>$name, 'email'=>$email, 'username'=>$username, 'validateUrl'=>$validateUrl);
 
   $result = postData(URL_API.'/user/update', $vars, $headers);
   if (isset($result)) {
@@ -229,6 +230,31 @@ $app->get('/account/validate', function() use ($app) {
     }
   }
 
+});
+
+/**
+* Resend the validation email
+**/
+$app->get('/account/validation/email', 'authenticate', function() use ($app) {
+  global $vars;
+  $headers = array('Authorization: '.$vars['userkey']);
+  $url = URL_API.'/validation/email/'.$_SESSION[SESSION_VAR.'userid'].'?validateUrl='.URL_HOST.'/account/validate';
+  //echo $url;
+  $result = getData($url, $headers);
+  if (isset($result)) {
+    if ($result->error) {
+      $vars = array_merge($vars, array('title'=>'Account', 'error'=>$result->error, 'message'=>$result->message));
+      $vars['object'] = $result;  
+      $app->render('account_details.twig.html', $vars);
+    } else {
+      $vars = array_merge($vars, array('title'=>'Account', 'error'=>$result->error, 'message'=>$result->message));
+      $vars['object'] = $result;  
+      $app->render('account_details.twig.html', $vars);
+    } 
+  } else {
+    $vars = array('title'=>'Error', 'message'=>'API not working');
+    $app->render('error.twig.html', $vars);          
+  }
 });
 
 /**
