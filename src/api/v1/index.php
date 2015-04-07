@@ -234,15 +234,15 @@ $app->post('/login', function() use ($app) {
   verifyRequiredParams(array('email', 'password'));
 
   // reading post params
-  $email = $app->request()->post('email');
+  $ident = $app->request()->post('email');
   $password = $app->request()->post('password');
   $response = array();
 
   $db = new DbHandler();
   // check for correct email and password
-  if ($db->checkLogin($email, $password)) {
+  if ($db->checkLogin($ident, $password)) {
     // get the user by email
-    $user = $db->getUserByEmail($email);
+    $user = $db->getUserByIdent($ident);
 
     if ($user != NULL) {
       $response["error"] = false;

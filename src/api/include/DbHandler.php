@@ -74,10 +74,10 @@ class DbHandler {
    * @param String $password User login password
    * @return boolean User login status success/fail
    */
-  public function checkLogin($email, $password) {
+  public function checkLogin($ident, $password) {
     // fetching user by email
-    $stmt = $this->conn->prepare("SELECT password_hash FROM users WHERE email = ?");
-    $stmt->bind_param("s", $email);
+    $stmt = $this->conn->prepare("SELECT password_hash FROM users WHERE email = ? OR username = ?");
+    $stmt->bind_param("ss", $ident, $ident);
     $stmt->execute();
     $stmt->bind_result($password_hash);
     $stmt->store_result();
@@ -133,6 +133,22 @@ class DbHandler {
     $stmt->close();
     return $num_rows > 0;
   }  
+
+  /**
+   * Fetching user by email or username
+   * @param String $ident email or username
+   */
+  public function getUserByIdent($ident) {
+    $stmt = $this->conn->prepare("SELECT id, name, email, username, api_key, status, created_at, validate_email, validate_count, reset_password, active FROM users WHERE email = ? OR username= ?");
+    $stmt->bind_param("ss", $ident, $ident);
+    if ($stmt->execute()) {
+      $user = $stmt->get_result()->fetch_assoc();
+      $stmt->close();
+      return $user;
+    } else {
+      return NULL;
+    }
+  }
 
   /**
    * Fetching user by email
