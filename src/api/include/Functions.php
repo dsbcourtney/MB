@@ -89,20 +89,6 @@ function verifyRequiredParams($required_fields) {
 }
 
 /**
- * Echoing json response to client
- * @param String $status_code Http response code
- * @param Int $response Json response
- */
-function echoRespnse($status_code, $response) {
-  $app = \Slim\Slim::getInstance();
-  // Http response code
-  $app->status($status_code);
-  // setting response content type to json
-  $app->contentType('application/json');
-  echo json_encode($response);
-}
-
-/**
 * Send registration email
 * @param Email used within registration
 * @param User object array
@@ -163,7 +149,7 @@ function registrationEmail($email, $user, $validateUrl='') {
 * Forgotten login email
 * @oaram Email parsed
 */
-function forgottenLoginEmail($email) {
+function forgottenLoginEmail($email, $validateUrl='') {
   $app = \Slim\Slim::getInstance();
   $db = new DbHandler();
   $user = $db->getUserByEmail($email);
@@ -174,7 +160,11 @@ function forgottenLoginEmail($email) {
 
     $message = file_get_contents('../templates/forgottenLogin_email.html');
     $message = str_replace("%users_name%", $user['name'], $message);
-    $message = str_replace("%url_reset_password%", URL_RESET_PASSWORD.'?ident='.$user['id'].$randomString, $message);
+    if ($validateUrl=='') {
+      $message = str_replace("%url_reset_password%", URL_RESET_PASSWORD.'?ident='.$user['id'].$randomString, $message);      
+    } else {
+      $message = str_replace("%url_reset_password%", $validateUrl.'?ident='.$user['id'].$randomString, $message);
+    }
 
     $mail = new PHPMailer;
     $mail->IsSMTP();
@@ -195,6 +185,20 @@ function forgottenLoginEmail($email) {
 
 
   }
+}
+
+/**
+ * Echoing json response to client
+ * @param String $status_code Http response code
+ * @param Int $response Json response
+ */
+function echoRespnse($status_code, $response) {
+  $app = \Slim\Slim::getInstance();
+  // Http response code
+  $app->status($status_code);
+  // setting response content type to json
+  $app->contentType('application/json');
+  echo json_encode($response);
 }
 
 /**

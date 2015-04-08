@@ -176,13 +176,14 @@ $app->get('/validation/email/:id', 'authenticate', function($userid) use ($app) 
 */
 $app->post('/forgotten/login', function() use ($app) {
   $email = $app->request()->post('email');
+  $validateUrl = $app->request()->post('validateUrl');
   $db = new DbHandler();
   $response = array();
 
   $user = $db->getUserByEmail($email);
 
   if ($user != NULL) {
-    forgottenLoginEmail($email);
+    forgottenLoginEmail($email, $validateUrl);
     $response['error'] = false;
     $response['message'] = 'Forgotten login email sent';
   } else {
@@ -197,28 +198,52 @@ $app->post('/forgotten/login', function() use ($app) {
 * url - /reset/password
 * method - GET
 * params - ident (indentification based on database and userid combination)
+* This will just return a boolean of whether allowed to do it or not
 */
 $app->get('/reset/password', function() use ($app) {
   $response = array();
-  $ident = $app->request()->get('ident');
-
-  $userid = substr($ident,0,1);
-  $string = substr($ident,1);
+  $ident = $app->request->get('ident');
   $db = new DbHandler();
-  /*
-  $res = $db->validateUser($userid, $string);
+  $user = $db->checkResetPassword($ident);
+  if ($user != NULL) {
+    $response['error'] = false;
+    $response['message'] = 'Password reset allowed';
+  } else {
+    $response['error'] = true;
+    $response['message'] = 'Password reset not allowed';
+  }
+  echoRespnse(200, $response);
+});
 
-  if ($res == VALIDATION_SUCCESS) {
-    $response["error"] = false;
-    $response["message"] = "Validation successful";    
-    echoRespnse(201, $response);
-  } else if ($res == VALIDATION_FAILURE) {
-    $response["error"] = true;
-    $response["message"] = "Sorry, validation failed";
+/** 
+* Reset Password 
+* url - /reset/password
+* method - POST
+* params - ident, new password
+* This will update the password depending upon the ident sent
+**/
+$app->post('/reset/password', function() use ($app) {
+  $ident = $app->request->post('ident');
+  $password = $app->request->post('password');
+  $db = new DbHandler();
+  $user = $db->checkResetPassword($ident);
+  if ($user != NULL) {
+    if ($user['id']>0) {
+      validatePass($password);
+      $db->updatePassword($user['id'], $password);
+      $response['error'] = false;
+      $response['message'] = 'Password reset successfully';
+      echoRespnse(201, $response);  
+    } else {
+      $response['error'] = true;
+      $response['message'] = 'User not found';
+      echoRespnse(200, $response);      
+    }
+  } else {
+    $response['error'] = true;
+    $response['message'] = 'Password reset not allowed';
     echoRespnse(200, $response);
   }
-  */
-
 
 });
 

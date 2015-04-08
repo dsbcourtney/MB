@@ -134,6 +134,8 @@ class DbHandler {
     return $num_rows > 0;
   }  
 
+  /***********************/
+
   /**
    * Fetching user by email or username
    * @param String $ident email or username
@@ -148,7 +150,7 @@ class DbHandler {
     } else {
       return NULL;
     }
-  }
+  }  
 
   /**
    * Fetching user by email
@@ -198,6 +200,24 @@ class DbHandler {
     }
   }  
 
+  /**
+  * Checking to see if reset password is allowed 
+  * @param String reset password identification
+  * Returns user id or null
+  **/
+  public function checkResetPassword($ident) {
+    $userid = substr($ident,0,1);
+    $string = substr($ident,1);
+    $sql = $this->conn->prepare("SELECT id FROM users WHERE id = ? AND reset_password = ?");
+    $sql->bind_param("is", $userid, $string);
+    if ($sql->execute()) {
+      $user = $sql->get_result()->fetch_assoc();
+      $sql->close();
+      return $user;
+    } else {
+      return NULL;
+    }
+  }
 
   /**
   * Update the user
@@ -217,7 +237,7 @@ class DbHandler {
 
     if ($doUpdate) {
       $update = $this->conn->prepare("UPDATE users SET name = ?, username = ?, email = ?, status = ?, validate_email = ?, validate_count = ?, reset_password = ?, active = ? WHERE id = ?");
-      $update->bind_param("sssissiii", $user['name'], $user['username'], $user['email'], $user['status'], $user['validate_email'], $user['validate_count'], $user['reset_password'], $user['active'], $user['id']);    
+      $update->bind_param("sssisssii", $user['name'], $user['username'], $user['email'], $user['status'], $user['validate_email'], $user['validate_count'], $user['reset_password'], $user['active'], $user['id']);    
       // Check for successful update
       if ($update->execute()) {
         // User successfully inserted
@@ -229,6 +249,24 @@ class DbHandler {
       $update->close();
 
     }
+  }
+
+  /**
+  * Update the password
+  * @param password that the user wants to update
+  * 
+  */
+  public function updatePassword($id, $password) {
+    require_once 'PassHash.php';
+    $password_hash = PassHash::hash($password);
+    $update = $this->conn->prepare("UPDATE users SET password_hash = ? WHERE id = ?");
+    $update->bind_param("si", $password_hash, $id);
+    if ($update->execute()) {
+      return USER_UPDATE_SUCCESSFUL;
+    } else {
+      return USER_UPDATE_FAILED;
+    }
+    $update->close(); 
   }
 
   /**

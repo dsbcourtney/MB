@@ -148,8 +148,65 @@ $app->post('/register', 'unauthenticate', function() use ($app) {
 
 /**
 * Forgotten login page
+* Needs to be logged out for this.
 **/
 $app->get('/forgotten-login', 'unauthenticate', function() use ($app) {
+  $vars = array('title'=>'Forgotten Login');
+  $app->render('forgotten_login.twig.html', $vars); 
+});
+
+/**
+* Forgotten login page post
+* @param email address
+**/
+$app->post('/forgotten-login', 'unauthenticate', function() use ($app) {
+  $email = $app->request->post('email');
+  $validateUrl = $app->request->post('validateUrl');
+  $vars = array('email'=>$email, 'validateUrl'=>$validateUrl);
+  $result = postData(URL_API.'/forgotten/login', $vars);
+  if (!$result->error) {
+    $vars = array('title'=>'Forgotten Login', 'alert'=>'success', 'heading'=>'Success!', 'message'=>$result->message);
+    $app->render('alert.twig.html', $vars);
+  } else {
+    $vars = array('error'=>$result->error, 'message'=>$result->message, 'title'=>'Forgotten Login');
+    $app->render('forgotten_login.twig.html', $vars);
+  }
+});
+
+/** 
+* Reset password
+* method - get
+* @param identification variable
+**/
+$app->get('/reset/password', 'unauthenticate', function() use ($app) {
+  $ident = $app->request->get('ident');
+  $result = getData(URL_API.'/reset/password?ident='.$ident);
+  if ($result->error) {
+    $vars = array('title'=>'Reset Password', 'alert'=>'danger', 'heading'=>'Error!', 'message'=>'Sorry password reset not allowed');    
+    $app->render('alert.twig.html', $vars);    
+  } else {
+    $vars = array('title'=>'Reset Password', 'ident'=>$ident);
+    $app->render('reset_password.twig.html', $vars);
+  }
+});
+
+/**
+* Reset password
+* method - post
+* @param ident, password
+**/
+$app->post('/reset/password', 'unauthenticate', function() use ($app) {
+  $ident = $app->request->post('ident');
+  $password = $app->request->post('password');
+  $vars = array('ident'=>$ident, 'password'=>$password);
+  $result = postData(URL_API.'/reset/password', $vars);
+  if ($result->error) {
+    $vars = array('title'=>'Reset Password', 'error'=>1, 'message'=>$result->message, 'ident'=>$ident);
+    $app->render('reset_password.twig.html', $vars);
+  } else {
+    $vars = array('title'=>'Login', 'success'=>1, 'message'=>'Password updated successfully');
+    $app->render('login.twig.html', $vars);    
+  }
 
 });
 
