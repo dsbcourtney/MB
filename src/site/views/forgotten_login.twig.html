@@ -1,0 +1,20 @@
+{% extends "layouts/full_width.twig.html" %}
+
+{% block title %}{{title}}{% endblock %}
+{% block content %}
+<form class="form-forgotten" action="{{base_url}}/forgotten-login" method="post">
+	<input type="hidden" name="validateUrl" value="{{base_url}}/reset/password">
+  <h2 class="form-forgotten-heading">Reset password</h2>
+  <label for="inputEmail" class="sr-only">Email address</label>
+  <input type="email" name="email" id="inputEmail" class="form-control" placeholder="Email address" value="{{email}}" required autofocus>
+  <button class="btn btn-lg btn-primary btn-block" type="submit">Request reset</button>
+  <a class="btn btn-lg btn-success btn-block" href="{{base_url}}/login">Sign In!</a>
+  {% if error == true %}
+  <br>
+  <div class="alert alert-danger alert-dismissible" role="alert">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <strong>Error!</strong> {{message}}
+  </div>
+  {% endif %}
+</form>
+{% endblock %}
