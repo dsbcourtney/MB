@@ -314,6 +314,22 @@ $app->get('/account/validation/email', 'authenticate', function() use ($app) {
   }
 });
 
+/** 
+* Account mates
+* Get a list of current mates
+* name, email, nickname, confirmed / unconfirmed, no. of bets
+**/
+$app->get('/account/mates', 'authenticate', function() use ($app) {
+
+});
+
+/**
+* Post a new mate into the account
+**/
+$app->post('/account/mates/add', 'authenticate', function() use ($app) {
+
+});
+
 /**
 * Logout page, has to be logged in to view this
 **/
