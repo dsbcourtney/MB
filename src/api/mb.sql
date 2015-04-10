@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 31, 2015 at 04:16 PM
+-- Generation Time: Apr 10, 2015 at 05:47 PM
 -- Server version: 5.6.17
 -- PHP Version: 5.5.12
 
@@ -19,6 +19,30 @@ SET time_zone = "+00:00";
 --
 -- Database: `mb`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `mates`
+--
+
+DROP TABLE IF EXISTS `mates`;
+CREATE TABLE IF NOT EXISTS `mates` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL DEFAULT '0',
+  `mate_id` int(11) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `nickname` varchar(255) NOT NULL,
+  `date_added` datetime NOT NULL,
+  `bet_count` int(11) NOT NULL,
+  `active_bet_count` int(11) NOT NULL,
+  `amount_lost` float NOT NULL,
+  `currency` varchar(3) NOT NULL,
+  `active` tinyint(4) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  KEY `mate_id` (`mate_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -40,9 +64,10 @@ CREATE TABLE IF NOT EXISTS `users` (
   `reset_password` varchar(255) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `active` tinyint(1) NOT NULL DEFAULT '1',
+  `currency` varchar(3) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=2 ;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
