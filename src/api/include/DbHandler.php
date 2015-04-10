@@ -19,7 +19,7 @@ class DbHandler {
     $this->conn = $db->connect();
   }
 
-  /* ------------- `users` table method ------------------ */
+  /* ------------- `users` table methods ------------------ */
 
   /**
    * Creating new user
@@ -335,6 +335,25 @@ class DbHandler {
     $stmt->close();
     return $num_rows > 0;
   }
+
+  /** ---------------- `mates` table methods ------------------- **/
+
+  /**
+  * Get a list of mates
+  * @param userid 
+  **/
+  public function getMatesList($userid) {
+    $sql = $this->conn->prepare("SELECT id, user_id, mate_id, email, nickname, date_added, bet_count, active_bet_count, amount_lost, currency, active FROM mates WHERE user_id = ?");
+    $sql->bind_param("i", $userid);
+    if ($sql->execute()) {
+      $mate = $sql->get_result()->fetch_assoc();
+      $stmt->close();
+      return $mate;
+    } else {
+      return NULL;
+    }
+  }
+
 
   /**
    * Generating random Unique MD5 String for user Api key
