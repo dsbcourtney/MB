@@ -1,0 +1,31 @@
+{% extends "layouts/left_column.twig.html" %}
+{% block title %}{{title}}{% endblock %}
+{% block leftcol %}
+<div class="list-group">
+  <a href="{{base_url}}/account" class="list-group-item">Account</a>
+  <a href="{{base_url}}/account/details" class="list-group-item">Details</a>
+  <a href="{{base_url}}/account/mates" class="list-group-item active">Mates</a>
+  <a href="{{base_url}}/account/bets" class="list-group-item">Bets</a>      
+</div>
+{% endblock %}
+
+{% block content %}
+	<div class="page-header">
+		<h1>Account <small>Mates</small></h1>
+	</div>
+	<div class="btn-group" role="group" aria-label="...">
+	  <a href="{{base_url}}/account/mates" class="btn btn-default active">List</a>
+	  <a href="{{base_url}}/account/mates/add" class="btn btn-default">Add</a>
+	  <a href="{{base_url}}/account/mates/stats" class="btn btn-default">Stats</a>
+	</div>
+
+
+{% endblock %}
+
+{% block java %}
+<script>
+  $(document).ready(function(){
+
+  });
+</script>
+{% endblock %}

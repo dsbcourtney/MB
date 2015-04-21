@@ -320,14 +320,24 @@ $app->get('/account/validation/email', 'authenticate', function() use ($app) {
 * name, email, nickname, confirmed / unconfirmed, no. of bets
 **/
 $app->get('/account/mates', 'authenticate', function() use ($app) {
-
+  $vars = array('title'=>'Mates');
+  $app->render('mates.twig.html', $vars);   
 });
 
 /**
-* Post a new mate into the account
+* Form to add a new mate into the account
+**/
+$app->get('/account/mates/add', 'authenticate', function() use ($app) {
+  $vars = array('title'=>'Mates');
+  $app->render('mates_add.twig.html', $vars);  
+});
+
+/** 
+* Post a new mates details into the account
 **/
 $app->post('/account/mates/add', 'authenticate', function() use ($app) {
-
+  $vars = array('title'=>'Mates');
+  $app->render('mates.twig.html', $vars);  
 });
 
 /**
