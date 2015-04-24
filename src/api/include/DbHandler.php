@@ -354,6 +354,15 @@ class DbHandler {
     }
   }
 
+  /**
+  * Add a mate
+  * @param name, email
+  **/
+  public function addMate($name, $email, $mate_id, $userid) {
+    $sql = $this->conn=>prepare("INSERT INTO mates (user_id, mate_id, email, nickname, date_added, bet_count, active_bet_count, amount_lost, currency, active) VALUES (?, ?, ?, ?, ?, 0, 0, 0, 'GBP', 1)";
+    $sql->bind_param("iis", $userid, $mate_id, $email, $name, date('Y-m-d H:i:s', time()), );
+  }
+
 
   /**
    * Generating random Unique MD5 String for user Api key

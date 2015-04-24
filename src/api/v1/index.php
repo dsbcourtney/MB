@@ -385,6 +385,36 @@ $app->post('/user/update', 'authenticate', function() use ($app) {
 
 });
 
+/******************************************************
+** MATE PAGES
+**/
+/**
+* Get list of mate
+**/
+$app->get('/mates/list', 'authenticate', function() use ($app) {
+
+});
+
+$app->post('/mates/add', 'authenticate', function() use ($app) {
+  global $userid;
+  verifyRequiredParams(array('name'));
+  $email = $app->request->post('email');
+  $name = $app->request->post('name');
+  $db = new DbHandler();
+
+  // First lets check to see if that user exists, if so get his userid
+  $mate_id = 0;
+  if ($email!='') {
+    $user = $db->getUserByEmail($email);
+    if ($user!=NULL) {
+      $mate_id = $user['id'];
+    }
+  }
+
+  $db->addMate($name, $email, $mate_id, $userid);
+
+});
+
 /**
  * Creating new task in db
  * method POST
@@ -414,6 +444,7 @@ $app->post('/tasks', 'authenticate', function() use ($app) {
   }
   echoRespnse(201, $response);
 });
+
 
 /**
  * Listing all tasks of particual user

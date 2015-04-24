@@ -337,6 +337,9 @@ $app->get('/account/mates/add', 'authenticate', function() use ($app) {
 **/
 $app->post('/account/mates/add', 'authenticate', function() use ($app) {
   $vars = array('title'=>'Mates');
+
+  $result = postData(URL_API.'/mate/add', $vars, $headers);
+
   $app->render('mates.twig.html', $vars);  
 });
 
