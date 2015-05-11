@@ -433,7 +433,7 @@ $app->post('/mates/add', 'authenticate', function() use ($app) {
       // If mate_id=0 and email exists send invitation email
       $response["error"] = false;
       $response["message"] = "Your mate has been added";    
-      echoRespnse(201, $response); 
+      echoRespnse(201, $response);
     } else {
       $response["error"] = true;
       $response["message"] = "Sorry an error occurred whilst adding your mate";
