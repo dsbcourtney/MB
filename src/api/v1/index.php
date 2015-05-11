@@ -396,23 +396,55 @@ $app->get('/mates/list', 'authenticate', function() use ($app) {
 });
 
 $app->post('/mates/add', 'authenticate', function() use ($app) {
-  global $userid;
+  global $user_id;
   verifyRequiredParams(array('name'));
   $email = $app->request->post('email');
   $name = $app->request->post('name');
   $db = new DbHandler();
 
-  // First lets check to see if that user exists, if so get his userid
-  $mate_id = 0;
-  if ($email!='') {
-    $user = $db->getUserByEmail($email);
-    if ($user!=NULL) {
-      $mate_id = $user['id'];
-    }
+  $doCreate = true;
+  $errmess = '';
+  // First lets see if they already have that username in their mates list
+  if ($db->getMateByNickname($user_id, $name)) {
+    $doCreate = false;
+    $errmess = 'You already have a mate by that nickname, please choose another';
   }
 
-  $db->addMate($name, $email, $mate_id, $userid);
+   if ($email!='' && $db->getMateByEmail($user_id, $email)) {
+    $doCreate = false;
+    $errmess = 'You already have a mate using that email address, please choose another';
+  } 
 
+  if ($doCreate) {
+    // Now lets check to see if that email exists as a user, if so get his userid
+    $mate_id = 0;
+    if ($email!='') {
+      $user = $db->getUserByEmail($email);
+      if ($user!=NULL) {
+        $mate_id = $user['id'];
+      }
+    } else {
+      $email = '';
+    }
+    $datetime = date('Y-m-d H:i:s', time());
+    $res = $db->addMate($name, $email, $mate_id, $user_id, $datetime); // True or false
+    
+    if ($res) {
+      // If mate_id=0 and email exists send invitation email
+      $response["error"] = false;
+      $response["message"] = "Your mate has been added";    
+      echoRespnse(201, $response); 
+    } else {
+      $response["error"] = true;
+      $response["message"] = "Sorry an error occurred whilst adding your mate";
+      echoRespnse(200, $response); 
+    }
+  } else {
+    $response["error"] = true;
+    $response["message"] = $errmess;    
+    echoRespnse(200, $response);     
+  }
+  
 });
 
 /**

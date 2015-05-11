@@ -347,7 +347,7 @@ class DbHandler {
     $sql->bind_param("i", $userid);
     if ($sql->execute()) {
       $mate = $sql->get_result()->fetch_assoc();
-      $stmt->close();
+      $sql->close();
       return $mate;
     } else {
       return NULL;
@@ -358,9 +358,49 @@ class DbHandler {
   * Add a mate
   * @param name, email
   **/
-  public function addMate($name, $email, $mate_id, $userid) {
-    $sql = $this->conn=>prepare("INSERT INTO mates (user_id, mate_id, email, nickname, date_added, bet_count, active_bet_count, amount_lost, currency, active) VALUES (?, ?, ?, ?, ?, 0, 0, 0, 'GBP', 1)";
-    $sql->bind_param("iis", $userid, $mate_id, $email, $name, date('Y-m-d H:i:s', time()), );
+  public function addMate($name, $email, $mate_id, $userid, $datetime) {
+    $sql = $this->conn->prepare("INSERT INTO mates (user_id, mate_id, email, nickname, date_added, bet_count, active_bet_count, amount_lost, currency, active) VALUES (?, ?, ?, ?, ?, 0, 0, 0, 'GBP', 1)");
+    //echo $sql;
+    $sql->bind_param("iisss", $userid, $mate_id, $email, $name, $datetime);
+    $result = $sql->execute();
+    $sql->close();
+    if ($result) {
+      return TRUE;
+    } else {
+      return FALSE;
+    }
+  }
+
+
+  /**
+  * Get a mate by email
+  **/
+  public function getMateByEmail($userid, $email) {
+    $sql = $this->conn->prepare("SELECT mate_id, email, nickname, date_added, bet_count, active_bet_count, amount_lost, currency, active FROM mates WHERE user_id = ? AND email = ?");
+    $sql->bind_param("is", $userid, $email);
+    if ($sql->execute()) {
+      $mate = $sql->get_result()->fetch_assoc();
+      $sql->close();
+      return $mate;
+    } else {
+      return NULL;
+    }
+  }
+
+
+  /**
+  * Get a mate by nickname
+  **/
+  public function getMateByNickname($userid, $name) {
+    $sql = $this->conn->prepare("SELECT mate_id, email, nickname, date_added, bet_count, active_bet_count, amount_lost, currency, active FROM mates WHERE user_id = ? AND nickname = ?");
+    $sql->bind_param("is", $userid, $name);
+    if ($sql->execute()) {
+      $mate = $sql->get_result()->fetch_assoc();
+      $sql->close();
+      return $mate;
+    } else {
+      return NULL;
+    }
   }
 
 

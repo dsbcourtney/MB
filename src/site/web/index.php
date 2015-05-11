@@ -336,11 +336,24 @@ $app->get('/account/mates/add', 'authenticate', function() use ($app) {
 * Post a new mates details into the account
 **/
 $app->post('/account/mates/add', 'authenticate', function() use ($app) {
-  $vars = array('title'=>'Mates');
-
-  $result = postData(URL_API.'/mate/add', $vars, $headers);
-
-  $app->render('mates.twig.html', $vars);  
+  global $vars;
+  $headers = array('Authorization: '.$vars['userkey']);  
+  $name = $app->request->post('name');
+  $email = $app->request->post('email');
+  $vars = array('name'=>$name, 'email'=>$email);
+  $result = postData(URL_API.'/mates/add', $vars, $headers);
+  if (isset($result)) {
+    if ($result->error) {
+      $vars = array('title'=>'Mates', 'error'=>$result->error, 'message'=>$result->message);
+      $app->render('mates_add.twig.html', $vars);
+    } else {
+      $vars = array('title'=>'Mates', 'success'=>true, 'message'=>'Your mate was successfully added');
+      $app->render('mates.twig.html', $vars);  
+    }
+  } else {
+    $vars = array('title'=>'Error', 'message'=>'API not working');
+    $app->render('error.twig.html', $vars);   
+  }
 });
 
 /**

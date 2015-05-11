@@ -27,9 +27,16 @@
 		<div class="form-group">
 			<label>Email address</label>
 			<input type="email" class="form-control" placeholder="Mates email address" name="email" value="" data-error="Email address entered is invalid">
-			<div class="help-block">Email address not required although if you want them to interate with you enter their email address and we will prompt them to sign up. This can be added later if desired.</div>
+			<div class="help-block">Email address not required although if you want them to interact with you enter their email address and we will prompt them to sign up. This can be added later if desired.</div>
 		</div>
 		<button type="submit" class="btn btn-primary">Save</button>
+	  {% if error == true %}
+	  <br>
+	  <div class="alert alert-danger alert-dismissible" role="alert">
+	    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+	    <strong>Error!</strong> {{message}}
+	  </div>
+	  {% endif %}		
 	</form>
 {% endblock %}
 
