@@ -389,9 +389,33 @@ $app->post('/user/update', 'authenticate', function() use ($app) {
 ** MATE PAGES
 **/
 /**
-* Get list of mate
+* Get list of mates based on the user id we get on authentication
 **/
 $app->get('/mates/list', 'authenticate', function() use ($app) {
+  global $user_id;
+  $db = new DbHandler();
+  $mates = $db->getMatesList($user_id);
+  $response = array();
+  if ($mates) {
+    $response['error'] = false;
+    $response['message'] = 'Success';
+    $response['mates'] = array();
+    while ($mate = $mates->fetch_assoc()) {
+      $tmp = array();
+      $tmp['id'] = $mate['id'];
+      $tmp['mate_id'] = $mate['mate_id'];
+      $tmp['email'] = $mate['email'];
+      $tmp['nickname'] = $mate['nickname'];
+      $tmp['date_added'] = $mate['date_added'];
+      
+      array_push($response['mates'], $tmp);
+    }
+    echoRespnse(201, $response);
+  } else {
+    $response['error'] = true;
+    $response['message'] = 'Failed to get mates list';
+    echoRespnse(200, $response);    
+  }
 
 });
 

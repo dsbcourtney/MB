@@ -343,12 +343,12 @@ class DbHandler {
   * @param userid 
   **/
   public function getMatesList($userid) {
-    $sql = $this->conn->prepare("SELECT id, user_id, mate_id, email, nickname, date_added, bet_count, active_bet_count, amount_lost, currency, active FROM mates WHERE user_id = ?");
+    $sql = $this->conn->prepare("SELECT id, user_id, mate_id, email, nickname, date_added, bet_count, active_bet_count, amount_lost, currency, active FROM mates WHERE user_id = ? ORDER BY date_added DESC");
     $sql->bind_param("i", $userid);
     if ($sql->execute()) {
-      $mate = $sql->get_result()->fetch_assoc();
+      $mates = $sql->get_result();
       $sql->close();
-      return $mate;
+      return $mates;
     } else {
       return NULL;
     }

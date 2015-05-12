@@ -26,13 +26,34 @@
   </div>
   {% endif %}		
   <hr>
-  
+  {% if mates|length > 0 %}
+  <table class="table table-striped table-bordered" width="100%" id="data-table">
+    <thead>
+      <tr>
+        <th>Nickname</th>
+        <th>Email</th>
+        <th>Date Added</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for mate in mates %}
+      <tr>
+        <td>{{ mate.nickname }}</td>
+        <td>{{ mate.email }}</td>
+        <td>{{ mate.date_added }}</td>
+      </tr>  
+    {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
 {% endblock %}
 
 {% block java %}
+<script src="{{ siteUrl('/assets/js/jquery.dataTables.min.js') }}"></script>
+<script src="{{ siteUrl('/assets/js/dataTables.bootstrap.min.js') }}"></script>
 <script>
   $(document).ready(function(){
-
+    $('#data-table').dataTable();
   });
 </script>
 {% endblock %}

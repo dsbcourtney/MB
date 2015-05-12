@@ -320,8 +320,13 @@ $app->get('/account/validation/email', 'authenticate', function() use ($app) {
 * name, email, nickname, confirmed / unconfirmed, no. of bets
 **/
 $app->get('/account/mates', 'authenticate', function() use ($app) {
-  $vars = array('title'=>'Mates');
-  $app->render('mates.twig.html', $vars);   
+  global $vars;
+  $headers = array('Authorization: '.$vars['userkey']);  
+  $result = getData(URL_API.'/mates/list', $headers);
+  //print_r($result->mates);
+  $vars = array('title'=>'Mates', 'mates'=>$result->mates);
+  $app->render('mates.twig.html', $vars);
+
 });
 
 /**
@@ -347,7 +352,8 @@ $app->post('/account/mates/add', 'authenticate', function() use ($app) {
       $vars = array('title'=>'Mates', 'error'=>$result->error, 'message'=>$result->message);
       $app->render('mates_add.twig.html', $vars);
     } else {
-      $vars = array('title'=>'Mates', 'success'=>true, 'message'=>'Your mate was successfully added');
+      $result = getData(URL_API.'/mates/list', $headers);
+      $vars = array('title'=>'Mates', 'success'=>true, 'message'=>'Your mate was successfully added', 'mates'=>$result->mates);
       $app->render('mates.twig.html', $vars);  
     }
   } else {
