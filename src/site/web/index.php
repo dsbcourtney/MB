@@ -362,6 +362,25 @@ $app->post('/account/mates/add', 'authenticate', function() use ($app) {
   }
 });
 
+/** 
+* Betting Part! How exciting!!
+**/
+
+$app->get('/bet/add', 'authenticate', function() use ($app) {
+  global $vars;
+  $headers = array('Authorization: '.$vars['userkey']);  
+  $result = getData(URL_API.'/mates/list', $headers);
+  $vars = array('title'=>'Add bet', 'mates'=>$result->mates);
+  $app->render('bet_add.twig.html', $vars);
+
+});
+
+$app->get('/bet/list', 'authenticate', function() use ($app) {
+
+
+});
+
+
 /**
 * Logout page, has to be logged in to view this
 **/

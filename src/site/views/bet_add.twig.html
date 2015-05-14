@@ -1,0 +1,47 @@
+{% extends "layouts/left_column.twig.html" %}
+{% block title %}{{title}}{% endblock %}
+{% block leftcol %}
+<div class="list-group">
+  <a href="{{base_url}}/account" class="list-group-item">Account</a>
+  <a href="{{base_url}}/account/details" class="list-group-item">Details</a>
+  <a href="{{base_url}}/account/mates" class="list-group-item">Mates</a>
+  <a href="{{base_url}}/bet/list" class="list-group-item active">Bets</a>         
+</div>
+{% endblock %}
+{% block content %}
+	<div class="page-header">
+		<h1>Bet <small>Add a new bet</small></h1>
+	</div>
+	<form class="bet-form" action="{{base_url}}/bet/add" method="post">
+		<div class="form-group">
+			<label>Bet description</label>
+			<textarea name="description" class="form-control" rows="7" required></textarea>
+		</div>	
+		{% if mates|length > 0 %}
+		<div class="form-group">
+			<label>Bet against</label>
+			<select class="form-control" name="name-id">
+				<option value="0">- select mate or enter their name below -</option>
+				{% for mate in mates %}
+				<option value="{{ mate.id }}">{{ mate.nickname }}{% if mate.email|length %} ({{ mate.email }}){% endif %}</option>
+				{% endfor %}
+			</select>
+		</div>
+		<div class="form-group">
+			<input type="text" class="form-control" name="name" placeholder="If the person(s) are not in the bet list " required>		
+		</div>
+		{% endif %}
+		<div class="form-group">
+
+		</div>
+		<button type="submit" class="btn btn-primary">Save</button>
+	</form>
+{% endblock %}
+
+{% block java %}
+<script>
+  $(document).ready(function(){
+    $('.bet-form').validator();
+  });
+</script>
+{% endblock %}
