@@ -33,6 +33,7 @@
         <th>Nickname</th>
         <th>Email</th>
         <th>Date Added</th>
+        <th></th>
       </tr>
     </thead>
     <tbody>
@@ -41,10 +42,16 @@
         <td>{{ mate.nickname }}</td>
         <td>{{ mate.email }}</td>
         <td>{{ mate.date_added }}</td>
+        <td>
+          <a href="{{base_url}}/account/mates/edit/{{ mate.id }}" class="btn btn-xs btn-default" aria-label="Edit">
+            <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
+          </a>
+        </td>
       </tr>  
     {% endfor %}
     </tbody>
   </table>
+  <
   {% endif %}
 {% endblock %}
 

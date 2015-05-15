@@ -18,25 +18,25 @@
 	  <a href="{{base_url}}/account/mates/add" class="btn btn-default active">Add</a>
 	  <a href="{{base_url}}/account/mates/stats" class="btn btn-default">Stats</a>
 	</div>
+	{% if error == true %}
+  <hr>
+  <div class="alert alert-danger alert-dismissible" role="alert">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <strong>Error!</strong> {{message}}
+  </div>
+	{% endif %}		
 	<hr>
 	<form class="form-update" action="{{base_url}}/account/mates/add" method="post">
 		<div class="form-group">
 			<label>Nickname <span class="text-danger">*</span></label>
-			<input type="text" class="form-control" placeholder="Mates nickname" name="name" value="" required>
+			<input type="text" class="form-control" placeholder="Mates nickname" name="name" value="{{ name }}" required>
 		</div>
 		<div class="form-group">
 			<label>Email address</label>
-			<input type="email" class="form-control" placeholder="Mates email address" name="email" value="" data-error="Email address entered is invalid">
+			<input type="email" class="form-control" placeholder="Mates email address" name="email" value="{{ email }}" data-error="Email address entered is invalid">
 			<div class="help-block">Email address not required although if you want them to interact with you enter their email address and we will prompt them to sign up. This can be added later if desired.</div>
 		</div>
-		<button type="submit" class="btn btn-primary">Save</button>
-	  {% if error == true %}
-	  <br>
-	  <div class="alert alert-danger alert-dismissible" role="alert">
-	    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-	    <strong>Error!</strong> {{message}}
-	  </div>
-	  {% endif %}		
+		<button type="submit" class="btn btn-primary">Save</button>	
 	</form>
 {% endblock %}
 

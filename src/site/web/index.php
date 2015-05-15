@@ -362,6 +362,15 @@ $app->post('/account/mates/add', 'authenticate', function() use ($app) {
   }
 });
 
+/**
+* Edit a mate
+**/
+$app->get('/account/mates/edit/:id', 'authenticate', function() use ($app) {
+
+  
+
+});
+
 /** 
 * Betting Part! How exciting!!
 **/

@@ -20,8 +20,9 @@ $app = new \Slim\Slim(array(
     'log.writer'=>$logWriter
   ));
  
-// User id from db - Global Variable
+// Global Variables
 $user_id = NULL;
+$user = array();
 
 /**
  * Adding Middle Layer to authenticate every request
@@ -47,11 +48,13 @@ function authenticate(\Slim\Route $route) {
       echoRespnse(401, $response);
       $app->stop();
     } else {
-      global $user_id;
+      global $user_id, $user;
       // get user primary key id
       $user = $db->getUserId($api_key);
-      if ($user != NULL)
+      if ($user != NULL) {
         $user_id = $user["id"];
+        $user = $db->getUserById($user_id);
+      }
     }
   } else {
     // api key is missing in header
@@ -420,7 +423,7 @@ $app->get('/mates/list', 'authenticate', function() use ($app) {
 });
 
 $app->post('/mates/add', 'authenticate', function() use ($app) {
-  global $user_id;
+  global $user_id, $user;
   verifyRequiredParams(array('name'));
   $email = $app->request->post('email');
   $name = $app->request->post('name');
@@ -434,9 +437,14 @@ $app->post('/mates/add', 'authenticate', function() use ($app) {
     $errmess = 'You already have a mate by that nickname, please choose another';
   }
 
-   if ($email!='' && $db->getMateByEmail($user_id, $email)) {
+  if ($email!='' && $db->getMateByEmail($user_id, $email)) {
     $doCreate = false;
     $errmess = 'You already have a mate using that email address, please choose another';
+  }
+
+  if ($email!='' && $email==$user['email']) {
+    $doCreate = false;
+    $errmess = 'You are trying to add your own email address to a mate, please use another';    
   } 
 
   if ($doCreate) {

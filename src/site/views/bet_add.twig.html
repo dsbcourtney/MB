@@ -28,8 +28,13 @@
 			</select>
 		</div>
 		<div class="form-group">
-			<input type="text" class="form-control" name="name" placeholder="If the person(s) are not in the bet list " required>		
+			<input type="text" class="form-control" name="name" placeholder="Enter the mates name if they are not in the mates list" required>		
 		</div>
+		{% else %}
+		<div class="form-group">
+			<label>Bet against</label>
+			<input type="text" class="form-control" name="name" placeholder="Enter who the bet is against" required>		
+		</div>		
 		{% endif %}
 		<div class="form-group">
 
@@ -42,6 +47,26 @@
 <script>
   $(document).ready(function(){
     $('.bet-form').validator();
+		{% if mates|length > 0 %}    
+    $('input[name="name"]').keyup(function(){
+    	if ($(this).val().length>0) {
+    		$('select[name="name-id"]').attr('disabled', 'disabled').attr('required',false).val('0');
+    		$(this).attr('required',true);
+    	} else {
+    		$('select[name="name-id"]').removeAttr('disabled').attr('required',true);
+    		$(this).attr('required',false);
+    	}
+    });
+    $('select[name="name-id"]').change(function(){
+    	if ($(this).val()>0) {
+     		$('input[name="name"]').attr('disabled', 'disabled').attr('required',false).val('');
+    		$(this).attr('required',true);   		
+    	} else {
+     		$('input[name="name"]').removeAttr('disabled').attr('required',true);
+    		$(this).attr('required',false);   		
+    	}
+    });
+    {% endif %}
   });
 </script>
 {% endblock %}
