@@ -384,6 +384,22 @@ $app->get('/bet/add', 'authenticate', function() use ($app) {
 
 });
 
+/**
+* This is going to recieve the quick bet and then ask then if they want to display more advanced bet options
+**/
+$app->post('/bet/add', 'authenticate', function() use ($app) {
+  global $vars;
+
+});
+
+$app->get('/bet/advanced', 'authenticate', function() use ($app) {
+
+});
+
+$app->post('/bet/advanced', 'authenticate', function() use ($app) {
+
+});
+
 $app->get('/bet/list', 'authenticate', function() use ($app) {
 
 

@@ -42,11 +42,13 @@ body {
   margin-bottom: 10px;
 }
 
-
-
 .form-register {
   max-width:400px;
   margin: 0 auto; 
+}
+
+.help-info, .second-form-control {
+  margin-top:5px;
 }
 
 /* data tables bootstap css */

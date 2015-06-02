@@ -14,30 +14,33 @@
 	</div>
 	<form class="bet-form" action="{{base_url}}/bet/add" method="post">
 		<div class="form-group">
-			<label>Bet description</label>
+			<label>Bet description <a href="#" class="help-info-show"><span class="glyphicon glyphicon-info-sign"></span></a></label>
 			<textarea name="description" class="form-control" rows="7" required></textarea>
+			<p class="help-info well well-sm hide">Some help text. <small><a href="#" class="help-info-hide">[hide]</a></small></p>
 		</div>	
 		{% if mates|length > 0 %}
 		<div class="form-group">
-			<label>Bet against</label>
+			<label>Bet against <a href="#" class="help-info-show"><span class="glyphicon glyphicon-info-sign"></span></a></label>
 			<select class="form-control" name="name-id">
 				<option value="0">- select mate or enter their name below -</option>
 				{% for mate in mates %}
 				<option value="{{ mate.id }}">{{ mate.nickname }}{% if mate.email|length %} ({{ mate.email }}){% endif %}</option>
 				{% endfor %}
 			</select>
-		</div>
-		<div class="form-group">
-			<input type="text" class="form-control" name="name" placeholder="Enter the mates name if they are not in the mates list" required>		
+			<input type="text" class="form-control second-form-control" name="name" placeholder="Enter the mates name if they are not in the mates list" required>
+			<p class="help-info well well-sm hide">Some help text. <small><a href="#" class="help-info-hide">[hide]</a></small></p>
 		</div>
 		{% else %}
 		<div class="form-group">
-			<label>Bet against</label>
+			<label>Bet against <a href="#" class="help-info-show"><span class="glyphicon glyphicon-info-sign"></span></a></label>
 			<input type="text" class="form-control" name="name" placeholder="Enter who the bet is against" required>		
-		</div>		
+			<p class="help-info well well-sm hide">Some help text. <small><a href="#" class="help-info-hide">[hide]</a></small></p>
+		</div>
 		{% endif %}
 		<div class="form-group">
-
+			<label>Prize or Agreement <a href="#" class="help-info-show"><span class="glyphicon glyphicon-info-sign"></span></a></label>
+			<input type="text" class="form-control" name="prize" placeholder="The winner gets..." required>
+			<p class="help-info well well-sm hide">Some help text. <small><a href="#" class="help-info-hide">[hide]</a></small></p>
 		</div>
 		<button type="submit" class="btn btn-primary">Save</button>
 	</form>
@@ -67,6 +70,12 @@
     	}
     });
     {% endif %}
+    $('.help-info-show').click(function(){
+    	$(this).closest('.form-group').find('.help-info').removeClass('hide');
+    });
+    $('.help-info-hide').click(function(){
+    	$(this).closest('.form-group').find('.help-info').addClass('hide');
+    });    
   });
 </script>
 {% endblock %}
