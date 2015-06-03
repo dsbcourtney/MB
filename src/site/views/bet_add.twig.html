@@ -21,7 +21,7 @@
 		{% if mates|length > 0 %}
 		<div class="form-group">
 			<label>Bet against <a href="#" class="help-info-show"><span class="glyphicon glyphicon-info-sign"></span></a></label>
-			<select class="form-control" name="name-id">
+			<select class="form-control" name="name_id">
 				<option value="0">- select mate or enter their name below -</option>
 				{% for mate in mates %}
 				<option value="{{ mate.id }}">{{ mate.nickname }}{% if mate.email|length %} ({{ mate.email }}){% endif %}</option>
@@ -53,14 +53,14 @@
 		{% if mates|length > 0 %}    
     $('input[name="name"]').keyup(function(){
     	if ($(this).val().length>0) {
-    		$('select[name="name-id"]').attr('disabled', 'disabled').attr('required',false).val('0');
+    		$('select[name="name_id"]').attr('disabled', 'disabled').attr('required',false).val('0');
     		$(this).attr('required',true);
     	} else {
-    		$('select[name="name-id"]').removeAttr('disabled').attr('required',true);
+    		$('select[name="name_id"]').removeAttr('disabled').attr('required',true);
     		$(this).attr('required',false);
     	}
     });
-    $('select[name="name-id"]').change(function(){
+    $('select[name="name_id"]').change(function(){
     	if ($(this).val()>0) {
      		$('input[name="name"]').attr('disabled', 'disabled').attr('required',false).val('');
     		$(this).attr('required',true);   		

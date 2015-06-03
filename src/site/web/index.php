@@ -389,6 +389,25 @@ $app->get('/bet/add', 'authenticate', function() use ($app) {
 **/
 $app->post('/bet/add', 'authenticate', function() use ($app) {
   global $vars;
+  $headers = array('Authorization: '.$vars['userkey']);  
+  $description = $app->request->post('description');
+  $name_id = $app->request->post('name_id');
+  $name = $app->request->post('name');
+  $prize = $app->request->post('prize');
+  $vars = array('description'=>$description, 'name_id'=>$name_id, 'name'=>$name, 'prize'=>$prize);
+  $result = postData(URL_API.'/bet/add', $vars, $headers);
+  if (isset($result)) {
+    if ($result->error) {
+      $vars = array('title'=>'Add Bet', 'error'=>$result->error, 'message'=>$result->message);
+      $app->render('bet_add.twig.html', $vars);
+    } else {
+      $vars = array('title'=>'Add Bet', 'success'=>true, 'message'=>'Your bet was successfully added');
+      $app->render('bet_add.twig.html', $vars);  
+    }
+  } else {
+    $vars = array('title'=>'Error', 'message'=>'API not working');
+    $app->render('error.twig.html', $vars);   
+  }
 
 });
 

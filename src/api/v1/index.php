@@ -479,6 +479,22 @@ $app->post('/mates/add', 'authenticate', function() use ($app) {
   
 });
 
+
+/** 
+* Betting API part
+**/
+
+$app->post('/bet/add', 'authenticate', function() use ($app) {
+  global $user_id, $user;
+  verifyRequiredParams(array('name'));
+  $email = $app->request->post('email');
+  $name = $app->request->post('name');
+  $db = new DbHandler();
+
+});
+
+
+
 /**
  * Creating new task in db
  * method POST
