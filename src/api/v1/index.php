@@ -486,11 +486,25 @@ $app->post('/mates/add', 'authenticate', function() use ($app) {
 
 $app->post('/bet/add', 'authenticate', function() use ($app) {
   global $user_id, $user;
-  verifyRequiredParams(array('name'));
-  $email = $app->request->post('email');
+  verifyRequiredParams(array('description', 'prize'));
+  $description = $app->request->post('description');
+  $name_id = $app->request->post('name_id');
   $name = $app->request->post('name');
-  $db = new DbHandler();
-
+  $prize = $app->request->post('prize');
+  // Handle the name
+  if ($name_id==0 && $name=='') { // problem as we haven't received an id or name (should never happen as it is handled in js)
+    $response["error"] = true;
+    $response["message"] = 'No bet opponent found';    
+    echoRespnse(200, $response);    
+  } else {
+    $db = new DbHandler();
+    $res = $db->addSimpleBet($user_id, $description, $name_id, $name, $prize);
+    if ($res) {
+      $response["error"] = false;
+      $response["message"] = "Your bet has been added";    
+      echoRespnse(201, $response);
+    }
+  }
 });
 
 

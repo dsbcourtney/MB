@@ -403,6 +403,29 @@ class DbHandler {
     }
   }
 
+  /** 
+  * Add a simple bet
+  **/
+  public function addSimpleBet($userid, $description, $name_id, $name, $prize) {
+    $sql = $this->conn->prepare("INSERT INTO bets (user_id, mate_name, title, prize) VALUES (?, ?, ?, ?)");
+    $sql->bind_param("isss", $userid, $name, $description, $prize);
+    if ($sql->execute()) {
+      $betid = $this->conn->insert_id;
+      if ($name_id>0) {
+        $sql = $this->conn->prepare("INSERT INTO bet_mate (bet_id, mate_id) VALUES (?, ?)");
+        $sql->bind_param("ii", $betid, $name_id);
+        if ($sql->execute()) {
+          return true;
+          $sql->close();
+        } else {
+          return NULL;
+        }
+      }
+    } else {
+      return NULL;
+    }
+  }
+
 
   /**
    * Generating random Unique MD5 String for user Api key
