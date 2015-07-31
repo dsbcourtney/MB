@@ -42,6 +42,16 @@
 			<input type="text" class="form-control" name="prize" placeholder="The winner gets..." required>
 			<p class="help-info well well-sm hide">Some help text. <small><a href="#" class="help-info-hide">[hide]</a></small></p>
 		</div>
+		<div class="form-group">
+			<label>Date due to finish <a href="#" class="help-info-show"><span class="glyphicon glyphicon-info-sign"></span></a></label>
+			<div class="input-group datepicker">
+				<input type="text" class="form-control" name="datedue" placeholder="Date due...">
+				<span class="input-group-addon">
+					<span class="glyphicon glyphicon-calendar"></span>
+				</span>
+			</div>
+			<p class="help-info well well-sm hide">Some help text. <small><a href="#" class="help-info-hide">[hide]</a></small></p>			
+		</div>
 		<button type="submit" class="btn btn-primary">Save</button>
 		<a href="#" id="advanced-options" class="pull-right">Advanced Bet Options</button>
 	</form>
@@ -51,6 +61,7 @@
 <script>
   $(document).ready(function(){
     $('.bet-form').validator();
+    $('.datepicker').datetimepicker();
 		{% if mates|length > 0 %}    
     $('input[name="name"]').keyup(function(){
     	if ($(this).val().length>0) {

@@ -219,6 +219,7 @@ class DbHandler {
     }
   }
 
+
   /**
   * Update the user
   * @param pass the $user you get from getUserByEmail or such function, 
@@ -406,9 +407,9 @@ class DbHandler {
   /** 
   * Add a simple bet
   **/
-  public function addSimpleBet($userid, $description, $name_id, $name, $prize) {
-    $sql = $this->conn->prepare("INSERT INTO bets (user_id, mate_name, title, prize) VALUES (?, ?, ?, ?)");
-    $sql->bind_param("isss", $userid, $name, $description, $prize);
+  public function addSimpleBet($userid, $description, $name_id, $name, $prize, $datedue) {
+    $sql = $this->conn->prepare("INSERT INTO bets (user_id, mate_name, title, prize, datedue) VALUES (?, ?, ?, ?, ?)");
+    $sql->bind_param("issss", $userid, $name, $description, $prize, $datedue);
     if ($sql->execute()) {
       $betid = $this->conn->insert_id;
       if ($name_id>0) {

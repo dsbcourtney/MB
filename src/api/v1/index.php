@@ -264,6 +264,7 @@ $app->post('/login', function() use ($app) {
   // reading post params
   $ident = $app->request()->post('email');
   $password = $app->request()->post('password');
+
   $response = array();
 
   $db = new DbHandler();
@@ -491,6 +492,8 @@ $app->post('/bet/add', 'authenticate', function() use ($app) {
   $name_id = $app->request->post('name_id');
   $name = $app->request->post('name');
   $prize = $app->request->post('prize');
+  $datedue = $app->request->post('datedue');
+  
   // Handle the name
   if ($name_id==0 && $name=='') { // problem as we haven't received an id or name (should never happen as it is handled in js)
     $response["error"] = true;
@@ -498,7 +501,7 @@ $app->post('/bet/add', 'authenticate', function() use ($app) {
     echoRespnse(200, $response);    
   } else {
     $db = new DbHandler();
-    $res = $db->addSimpleBet($user_id, $description, $name_id, $name, $prize);
+    $res = $db->addSimpleBet($user_id, $description, $name_id, $name, $prize, $datedue);
     if ($res) {
       $response["error"] = false;
       $response["message"] = "Your bet has been added";    

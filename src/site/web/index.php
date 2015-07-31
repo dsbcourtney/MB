@@ -394,7 +394,8 @@ $app->post('/bet/add', 'authenticate', function() use ($app) {
   $name_id = $app->request->post('name_id');
   $name = $app->request->post('name');
   $prize = $app->request->post('prize');
-  $vars = array('description'=>$description, 'name_id'=>$name_id, 'name'=>$name, 'prize'=>$prize);
+  $datedue = date('Y-m-d H:i:s', strtotime($app->request->post('datedue')));
+  $vars = array('description'=>$description, 'name_id'=>$name_id, 'name'=>$name, 'prize'=>$prize, 'datedue'=>$datedue);
   $result = postData(URL_API.'/bet/add', $vars, $headers);
   if (isset($result)) {
     if ($result->error) {
