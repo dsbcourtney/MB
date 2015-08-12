@@ -421,8 +421,11 @@ $app->post('/bet/advanced', 'authenticate', function() use ($app) {
 });
 
 $app->get('/bet/list', 'authenticate', function() use ($app) {
-
-
+  global $vars;
+  $headers = array('Authorization: '.$vars['userkey']);
+  $result = getData(URL_API.'/bet/list', $headers);
+  $vars = array('title'=>'Bet List', 'bets'=>$result->bets);
+  $app->render('bets.twig.html', $vars);
 });
 
 

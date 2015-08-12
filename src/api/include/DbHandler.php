@@ -427,6 +427,27 @@ class DbHandler {
     }
   }
 
+  /**
+  * Get a list of bets
+  * @param userid 
+  **/
+  public function getBetsList($userid) {
+    $sql = $this->conn->prepare("SELECT id, user_id, mate_name, title, prize, dateadded, datedue FROM bets WHERE user_id = ? ORDER BY dateadded DESC");
+    $sql->bind_param("i", $userid);
+    if ($sql->execute()) {
+      $bets = $sql->get_result();
+      $sql->close();
+      return $bets;
+    } else {
+      return NULL;
+    }
+  }
+
+  public function getBetOpponents() {
+    return NULL;
+  }
+
+
 
   /**
    * Generating random Unique MD5 String for user Api key

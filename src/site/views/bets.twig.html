@@ -4,19 +4,17 @@
 <div class="list-group">
   <a href="{{base_url}}/account" class="list-group-item">Account</a>
   <a href="{{base_url}}/account/details" class="list-group-item">Details</a>
-  <a href="{{base_url}}/account/mates" class="list-group-item active">Mates</a>
-  <a href="{{base_url}}/bet/list" class="list-group-item">Bets</a>      
+  <a href="{{base_url}}/account/mates" class="list-group-item">Mates</a>
+  <a href="{{base_url}}/bet/list" class="list-group-item active">Bets</a>      
 </div>
 {% endblock %}
 
 {% block content %}
 	<div class="page-header">
-		<h1>Account <small>Mates</small></h1>
+		<h1>Bets <small>List</small></h1>
 	</div>
 	<div class="btn-group" role="group" aria-label="...">
-	  <a href="{{base_url}}/account/mates" class="btn btn-default active">List</a>
-	  <a href="{{base_url}}/account/mates/add" class="btn btn-default">Add</a>
-	  <a href="{{base_url}}/account/mates/stats" class="btn btn-default">Stats</a>
+	  <a href="{{base_url}}/bet/list" class="btn btn-default active">List</a>
 	</div>
   {% if success == true %}
   <hr>
@@ -26,24 +24,26 @@
   </div>
   {% endif %}		
   <hr>
-  {% if mates|length > 0 %}
+  {% if bets|length > 0 %}
   <table class="table table-striped table-bordered" width="100%" id="data-table">
     <thead>
       <tr>
-        <th>Nickname</th>
-        <th>Email</th>
+        <th>Opponent(s)</th>
+        <th>Title</th>
         <th>Date Added</th>
+        <th>Date Due</th>
         <th></th>
       </tr>
     </thead>
     <tbody>
-    {% for mate in mates %}
+    {% for bet in bets %}
       <tr>
-        <td>{{ mate.nickname }}</td>
-        <td>{{ mate.email }}</td>
-        <td>{{ mate.date_added }}</td>
+        <td>{{ bet.mate_name }}</td>
+        <td>{{ bet.title }}</td>
+        <td>{{ bet.dateadded }}</td>
+        <td>{{ bet.datedue }}</td>
         <td>
-          <a href="{{base_url}}/account/mates/edit/{{ mate.id }}" class="btn btn-xs btn-default" aria-label="Edit">
+          <a href="{{base_url}}/account/mates/edit/{{ bet.id }}" class="btn btn-xs btn-default" aria-label="Edit">
             <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
           </a>
         </td>

@@ -484,6 +484,39 @@ $app->post('/mates/add', 'authenticate', function() use ($app) {
 /** 
 * Betting API part
 **/
+$app->get('/bet/list', 'authenticate', function() use ($app) {
+  global $user_id;
+  $db = new DbHandler();
+  $bets = $db->getBetsList($user_id);
+  $response = array();
+  if ($bets) {
+    $response['error'] = false;
+    $response['message'] = 'Success';
+    $response['bets'] = array();
+    while ($bet = $bets->fetch_assoc()) {
+      $tmp = array();
+      $tmp['id'] = $bet['id'];
+      $tmp['mate_name'] = $bet['mate_name'];
+      $tmp['title'] = $bet['title'];
+      $tmp['prize'] = $bet['prize'];
+      $tmp['dateadded'] = $bet['dateadded'];
+      $tmp['datedue'] = $bet['datedue'];
+      
+      array_push($response['bets'], $tmp);
+    }
+    echoRespnse(201, $response);
+  } else {
+    $response['error'] = true;
+    $response['message'] = 'Failed to get bet list';
+    echoRespnse(200, $response);    
+  }  
+  
+});
+
+
+/**
+  * Add a new bet
+**/
 
 $app->post('/bet/add', 'authenticate', function() use ($app) {
   global $user_id, $user;
