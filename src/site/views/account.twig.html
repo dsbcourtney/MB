@@ -1,12 +1,7 @@
 {% extends "layouts/left_column.twig.html" %}
 {% block title %}{{title}}{% endblock %}
 {% block leftcol %}
-<div class="list-group">
-  <a href="{{base_url}}/account" class="list-group-item active">Account</a>
-  <a href="{{base_url}}/account/details" class="list-group-item">Details</a>
-  <a href="{{base_url}}/account/mates" class="list-group-item">Mates</a>
-  <a href="{{base_url}}/bet/list" class="list-group-item">Bets</a>         
-</div>
+  {% include 'layouts/left_account.twig.html' %}
 {% endblock %}
 {% block content %}
 	<div class="page-header">

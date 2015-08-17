@@ -1,12 +1,7 @@
 {% extends "layouts/left_column.twig.html" %}
 {% block title %}{{title}}{% endblock %}
 {% block leftcol %}
-<div class="list-group">
-  <a href="{{base_url}}/account" class="list-group-item">Account</a>
-  <a href="{{base_url}}/account/details" class="list-group-item">Details</a>
-  <a href="{{base_url}}/account/mates" class="list-group-item">Mates</a>
-  <a href="{{base_url}}/bet/list" class="list-group-item active">Bets</a>      
-</div>
+  {% include 'layouts/left_account.twig.html' %}
 {% endblock %}
 
 {% block content %}
@@ -15,6 +10,7 @@
 	</div>
 	<div class="btn-group" role="group" aria-label="...">
 	  <a href="{{base_url}}/bet/list" class="btn btn-default active">List</a>
+    <a href="{{base_url}}/bet/add" class="btn btn-default">Add</a>
 	</div>
   {% if success == true %}
   <hr>
@@ -28,8 +24,8 @@
   <table class="table table-striped table-bordered" width="100%" id="data-table">
     <thead>
       <tr>
-        <th>Opponent(s)</th>
         <th>Title</th>
+        <th>Opponent(s)</th>
         <th>Date Added</th>
         <th>Date Due</th>
         <th></th>
@@ -38,12 +34,12 @@
     <tbody>
     {% for bet in bets %}
       <tr>
-        <td>{{ bet.mate_name }}</td>
-        <td>{{ bet.title }}</td>
+        <td>{{ bet.title|slice(0,40) }}</td>      
+        <td>{% if bet.mate_name != null %}{{ bet.mate_name }}{% else %}{{ bet.nickname }}{% endif %}</td>
         <td>{{ bet.dateadded }}</td>
         <td>{{ bet.datedue }}</td>
         <td>
-          <a href="{{base_url}}/account/mates/edit/{{ bet.id }}" class="btn btn-xs btn-default" aria-label="Edit">
+          <a href="{{base_url}}/account/bet/edit/{{ bet.id }}" class="btn btn-xs btn-default" aria-label="Edit">
             <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
           </a>
         </td>

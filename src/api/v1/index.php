@@ -501,6 +501,7 @@ $app->get('/bet/list', 'authenticate', function() use ($app) {
       $tmp['prize'] = $bet['prize'];
       $tmp['dateadded'] = $bet['dateadded'];
       $tmp['datedue'] = $bet['datedue'];
+      $tmp['nickname'] = $bet['nickname'];
       
       array_push($response['bets'], $tmp);
     }

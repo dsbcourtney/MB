@@ -432,8 +432,8 @@ class DbHandler {
   * @param userid 
   **/
   public function getBetsList($userid) {
-    $sql = $this->conn->prepare("SELECT id, user_id, mate_name, title, prize, dateadded, datedue FROM bets WHERE user_id = ? ORDER BY dateadded DESC");
-    $sql->bind_param("i", $userid);
+    $sql = $this->conn->prepare("SELECT bets.id, bets.user_id, bets.mate_name, bets.title, bets.prize, bets.dateadded, bets.datedue, GROUP_CONCAT(mates.nickname SEPARATOR ', ') AS nickname FROM bets LEFT JOIN bet_mate ON bets.id=bet_mate.bet_id LEFT JOIN mates ON mates.id=bet_mate.mate_id WHERE ( bets.user_id = ? OR bet_mate.mate_id = ? ) GROUP BY bets.id ORDER BY bets.dateadded DESC");
+    $sql->bind_param("ii", $userid, $userid);
     if ($sql->execute()) {
       $bets = $sql->get_result();
       $sql->close();

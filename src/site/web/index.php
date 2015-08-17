@@ -218,7 +218,7 @@ $app->get('/account', 'authenticate', function() use ($app) {
   $headers = array('Authorization: '.$vars['userkey']);
   $user = getData(URL_API.'/user/'.$vars['userid'], $headers);
   if (!$user->error) {
-    $vars = array_merge($vars, array('title'=>'Account'));
+    $vars = array_merge($vars, array('title'=>'Account', 'page'=>'account'));
     $vars['object'] = $user;
     //print_r($vars);
     $app->render('account.twig.html', $vars);
@@ -236,7 +236,7 @@ $app->get('/account/details', 'authenticate', function() use ($app) {
   $headers = array('Authorization: '.$vars['userkey']);
   $user = getData(URL_API.'/user/'.$vars['userid'], $headers);
   if (!$user->error) {
-    $vars = array_merge($vars, array('title'=>'Account'));
+    $vars = array_merge($vars, array('title'=>'Account', 'page'=>'details'));
     $vars['object'] = $user;
     //print_r($vars);
     $app->render('account_details.twig.html', $vars);
@@ -260,7 +260,7 @@ $app->post('/account/details', 'authenticate', function() use ($app) {
 
   $result = postData(URL_API.'/user/update', $vars, $headers);
   if (isset($result)) {
-    $vars = array_merge($vars, array('title'=>'Account', 'error'=>$result->error, 'message'=>$result->message));
+    $vars = array_merge($vars, array('title'=>'Account', 'error'=>$result->error, 'message'=>$result->message, 'page'=>'details'));
     $vars['object'] = $result;        
     $app->render('account_details.twig.html', $vars);
   } else {
@@ -300,11 +300,11 @@ $app->get('/account/validation/email', 'authenticate', function() use ($app) {
   $result = getData($url, $headers);
   if (isset($result)) {
     if ($result->error) {
-      $vars = array_merge($vars, array('title'=>'Account', 'error'=>$result->error, 'message'=>$result->message));
+      $vars = array_merge($vars, array('title'=>'Account', 'error'=>$result->error, 'message'=>$result->message, 'page'=>'details'));
       $vars['object'] = $result;  
       $app->render('account_details.twig.html', $vars);
     } else {
-      $vars = array_merge($vars, array('title'=>'Account', 'error'=>$result->error, 'message'=>$result->message));
+      $vars = array_merge($vars, array('title'=>'Account', 'error'=>$result->error, 'message'=>$result->message, 'page'=>'details'));
       $vars['object'] = $result;  
       $app->render('account_details.twig.html', $vars);
     } 
@@ -324,7 +324,7 @@ $app->get('/account/mates', 'authenticate', function() use ($app) {
   $headers = array('Authorization: '.$vars['userkey']);  
   $result = getData(URL_API.'/mates/list', $headers);
   //print_r($result->mates);
-  $vars = array('title'=>'Mates', 'mates'=>$result->mates);
+  $vars = array('title'=>'Mates', 'mates'=>$result->mates, 'page'=>'mates');
   $app->render('mates.twig.html', $vars);
 
 });
@@ -333,7 +333,7 @@ $app->get('/account/mates', 'authenticate', function() use ($app) {
 * Form to add a new mate into the account
 **/
 $app->get('/account/mates/add', 'authenticate', function() use ($app) {
-  $vars = array('title'=>'Mates');
+  $vars = array('title'=>'Mates', 'page'=>'mates');
   $app->render('mates_add.twig.html', $vars);  
 });
 
@@ -349,11 +349,11 @@ $app->post('/account/mates/add', 'authenticate', function() use ($app) {
   $result = postData(URL_API.'/mates/add', $vars, $headers);
   if (isset($result)) {
     if ($result->error) {
-      $vars = array('title'=>'Mates', 'error'=>$result->error, 'message'=>$result->message);
+      $vars = array('title'=>'Mates', 'error'=>$result->error, 'message'=>$result->message, 'page'=>'mates');
       $app->render('mates_add.twig.html', $vars);
     } else {
       $result = getData(URL_API.'/mates/list', $headers);
-      $vars = array('title'=>'Mates', 'success'=>true, 'message'=>'Your mate was successfully added', 'mates'=>$result->mates);
+      $vars = array('title'=>'Mates', 'success'=>true, 'message'=>'Your mate was successfully added', 'mates'=>$result->mates, 'page'=>'mates');
       $app->render('mates.twig.html', $vars);  
     }
   } else {
@@ -379,7 +379,7 @@ $app->get('/bet/add', 'authenticate', function() use ($app) {
   global $vars;
   $headers = array('Authorization: '.$vars['userkey']);  
   $result = getData(URL_API.'/mates/list', $headers);
-  $vars = array('title'=>'Add bet', 'mates'=>$result->mates);
+  $vars = array('title'=>'Add bet', 'mates'=>$result->mates, 'page'=>'bets');
   $app->render('bet_add.twig.html', $vars);
 
 });
@@ -399,15 +399,28 @@ $app->post('/bet/add', 'authenticate', function() use ($app) {
   $result = postData(URL_API.'/bet/add', $vars, $headers);
   if (isset($result)) {
     if ($result->error) {
-      $vars = array('title'=>'Add Bet', 'error'=>$result->error, 'message'=>$result->message);
+      $vars = array('title'=>'Add Bet', 'error'=>$result->error, 'message'=>$result->message, 'page'=>'bets');
       $app->render('bet_add.twig.html', $vars);
     } else {
-      $vars = array('title'=>'Add Bet', 'success'=>true, 'message'=>'Your bet was successfully added');
+      $vars = array('title'=>'Add Bet', 'success'=>true, 'message'=>'Your bet was successfully added', 'page'=>'bets');
       $app->render('bet_add.twig.html', $vars);  
     }
   } else {
     $vars = array('title'=>'Error', 'message'=>'API not working');
     $app->render('error.twig.html', $vars);   
+  }
+});
+
+$app->get('/bet/edit/:id', 'authenticate', function($bet_id) use ($app) {
+  global $vars;
+  $headers = array('Authorization: '.$vars['userkey']);
+  $result = getData(URL_API.'/bet/edit/'.$bet_id);
+  if (isset($result)) {
+    $vars = array('title'=>'Edit Bet', 'error'=>$result->error, 'message');
+    $app->render('bet_add.twig.html', $vars);
+  } else {
+    $vars = array('title'=>'Error', 'message'=>'API not working');
+    $app->render('error.twig.html', $vars);
   }
 
 });
@@ -424,7 +437,7 @@ $app->get('/bet/list', 'authenticate', function() use ($app) {
   global $vars;
   $headers = array('Authorization: '.$vars['userkey']);
   $result = getData(URL_API.'/bet/list', $headers);
-  $vars = array('title'=>'Bet List', 'bets'=>$result->bets);
+  $vars = array('title'=>'Bet List', 'bets'=>$result->bets, 'page'=>'bets');
   $app->render('bets.twig.html', $vars);
 });
 
