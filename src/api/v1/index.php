@@ -423,6 +423,35 @@ $app->get('/mates/list', 'authenticate', function() use ($app) {
 
 });
 
+/**
+* Get a single mates details
+* Need to make sure that the authenticated mate is allowed to get their details
+**/
+$app->get('/mates/:id', 'authenticate', function($mate_id) use ($app) {
+  global $user_id;
+  $db = new DbHandler();
+  $mate = $db->getMateById($user_id, $mate_id);
+  $response = array();
+  if ($mate) {
+    $response['id'] = $mate_id;
+    $response['email'] = $mate['email'];
+    $response['nickname'] = $mate['nickname'];
+    $response['error'] = false;
+    $response['message'] = '';
+    echoRespnse(201, $response);
+  } else {
+    $response['error'] = true;
+    $response['message'] = 'Mates details not available';
+    echoRespnse(200, $response);
+  }
+
+});
+
+$app->post('/mates/:id', 'authenticate', function($mate_id) use ($app) {
+  global $user_id;
+  $db = new DbHandler();
+})
+
 $app->post('/mates/add', 'authenticate', function() use ($app) {
   global $user_id, $user;
   verifyRequiredParams(array('name'));
@@ -479,6 +508,8 @@ $app->post('/mates/add', 'authenticate', function() use ($app) {
   }
   
 });
+
+
 
 
 /** 
@@ -544,6 +575,12 @@ $app->post('/bet/add', 'authenticate', function() use ($app) {
   }
 });
 
+$app->get('/bet/edit/:id', 'authenticate', function($bet_id) use ($app) {
+  global $user_id, $user;
+  
+
+
+});
 
 
 /**

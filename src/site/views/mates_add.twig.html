@@ -10,7 +10,7 @@
 	</div>
 	<div class="btn-group" role="group" aria-label="...">
 	  <a href="{{base_url}}/account/mates" class="btn btn-default">List</a>
-	  <a href="{{base_url}}/account/mates/add" class="btn btn-default active">Add</a>
+	  <a href="{{base_url}}/account/mates/add" class="btn btn-default active">Add / Edit</a>
 	  <a href="{{base_url}}/account/mates/stats" class="btn btn-default">Stats</a>
 	</div>
 	{% if error == true %}
@@ -24,11 +24,11 @@
 	<form class="form-update" action="{{base_url}}/account/mates/add" method="post">
 		<div class="form-group">
 			<label>Nickname <span class="text-danger">*</span></label>
-			<input type="text" class="form-control" placeholder="Mates nickname" name="name" value="{{ name }}" required>
+			<input type="text" class="form-control" placeholder="Mates nickname" name="name" value="{{ object.nickname }}" required>
 		</div>
 		<div class="form-group">
 			<label>Email address</label>
-			<input type="email" class="form-control" placeholder="Mates email address" name="email" value="{{ email }}" data-error="Email address entered is invalid">
+			<input type="email" class="form-control" placeholder="Mates email address" name="email" value="{{ object.email }}" data-error="Email address entered is invalid">
 			<div class="help-block">Email address not required although if you want them to interact with you enter their email address and we will prompt them to sign up. This can be added later if desired.</div>
 		</div>
 		<button type="submit" class="btn btn-primary">Save</button>	

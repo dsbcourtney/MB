@@ -372,6 +372,20 @@ class DbHandler {
     }
   }
 
+  /**
+  * Get a mate by id
+  **/
+  public function getMateById($userid, $id) {
+    $sql = $this->conn->prepare("SELECT mate_id, email, nickname, date_added, bet_count, active_bet_count, amount_lost, currency, active FROM mates WHERE user_id = ? AND id = ?");
+    $sql->bind_param("ii", $userid, $id);
+    if ($sql->execute()) {
+      $mate = $sql->get_result()->fetch_assoc();
+      $sql->close();
+      return $mate;
+    } else {
+      return NULL;
+    }
+  }
 
   /**
   * Get a mate by email

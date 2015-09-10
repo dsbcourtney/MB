@@ -365,11 +365,46 @@ $app->post('/account/mates/add', 'authenticate', function() use ($app) {
 /**
 * Edit a mate
 **/
-$app->get('/account/mates/edit/:id', 'authenticate', function() use ($app) {
-
-  
-
+$app->get('/account/mates/edit/:id', 'authenticate', function($mate_id) use ($app) {
+  global $vars;
+  $headers = array('Authorization: '.$vars['userkey']);  
+  $result = getData(URL_API.'/mates/'.$mate_id, $headers);
+  //print_r($result);
+  if (isset($result)) {
+    $vars = array('title'=>'Edit Mate', 'page'=>'mates', 'error'=>$result->error, 'message'=>$result->message);
+    $vars['object'] = $result;
+    $app->render('mates_add.twig.html', $vars);
+  } else {
+    $vars = array('title'=>'Error', 'message'=>'API not working');
+    $app->render('error.twig.html', $vars);
+  }
 });
+
+/**
+** Edit a mate (post)
+**/
+$app->post('/account/mates/edit/:id', 'authenticate', function($mate_id) use ($app) {
+  global $vars;
+  $headers = array('Authorization: '.$vars['userkey']);
+  $nickname = $app->request->post('name');
+  $email = $app->request->post('email');
+  $vars = array('name'=>$name, 'email'=>$email);
+  $result = postData(URL_API.'/mates/'.$mate_id, $vars, $headers);
+  if (isset($result)) {
+    if ($result->error) {
+      $vars = array('title'=>'Mates', 'error'=>$result->error, 'message'=>$result->message, 'page'=>'mates');
+      $app->render('mates_add.twig.html', $vars);
+    } else {
+      $result = getData(URL_API.'/mates/list', $headers);
+      $vars = array('title'=>'Mates', 'success'=>true, 'message'=>'Your mate was successfully updated', 'mates'=>$result->mates, 'page'=>'mates');
+      $app->render('mates.twig.html', $vars);  
+    }
+  } else {
+    $vars = array('title'=>'Error', 'message'=>'API not working');
+    $app->render('error.twig.html', $vars);   
+  }
+});
+
 
 /** 
 * Betting Part! How exciting!!
