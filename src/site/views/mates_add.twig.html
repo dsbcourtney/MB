@@ -21,7 +21,7 @@
   </div>
 	{% endif %}		
 	<hr>
-	<form class="form-update" action="{{base_url}}/account/mates/add" method="post">
+	<form class="form-update" action="{{base_url}}/account/mates/{% if object is defined %}edit/{{ object.id }}{% else %}add{% endif %}" method="post">
 		<div class="form-group">
 			<label>Nickname <span class="text-danger">*</span></label>
 			<input type="text" class="form-control" placeholder="Mates nickname" name="name" value="{{ object.nickname }}" required>

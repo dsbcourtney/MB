@@ -373,9 +373,25 @@ class DbHandler {
   }
 
   /**
+  * Update a mate
+  * @param name, email
+  **/
+  public function updateMate($name, $email, $id, $datetime, $mate_id) {
+    $sql = $this->conn->prepare("UPDATE mates SET nickname=?, email=?, date_edited=?, mate_id=? WHERE id=?");
+    $sql->bind_param("sssii", $name, $email, $datetime, $mate_id, $id);
+    $result = $sql->execute();
+    $sql->close();
+    if ($result) {
+      return TRUE;
+    } else {
+      return FALSE;
+    }
+  }
+
+  /**
   * Get a mate by id
   **/
-  public function getMateById($userid, $id) {
+  public function getMateById($userid, $id, $apartfrom=0) {// apart from array
     $sql = $this->conn->prepare("SELECT mate_id, email, nickname, date_added, bet_count, active_bet_count, amount_lost, currency, active FROM mates WHERE user_id = ? AND id = ?");
     $sql->bind_param("ii", $userid, $id);
     if ($sql->execute()) {
@@ -390,7 +406,7 @@ class DbHandler {
   /**
   * Get a mate by email
   **/
-  public function getMateByEmail($userid, $email) {
+  public function getMateByEmail($userid, $email, $apartfrom=0) {// apart from array
     $sql = $this->conn->prepare("SELECT mate_id, email, nickname, date_added, bet_count, active_bet_count, amount_lost, currency, active FROM mates WHERE user_id = ? AND email = ?");
     $sql->bind_param("is", $userid, $email);
     if ($sql->execute()) {
@@ -406,7 +422,7 @@ class DbHandler {
   /**
   * Get a mate by nickname
   **/
-  public function getMateByNickname($userid, $name) {
+  public function getMateByNickname($userid, $name, $apartfrom=0) { // apart from array
     $sql = $this->conn->prepare("SELECT mate_id, email, nickname, date_added, bet_count, active_bet_count, amount_lost, currency, active FROM mates WHERE user_id = ? AND nickname = ?");
     $sql->bind_param("is", $userid, $name);
     if ($sql->execute()) {

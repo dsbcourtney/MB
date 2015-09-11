@@ -388,7 +388,7 @@ $app->post('/account/mates/edit/:id', 'authenticate', function($mate_id) use ($a
   $headers = array('Authorization: '.$vars['userkey']);
   $nickname = $app->request->post('name');
   $email = $app->request->post('email');
-  $vars = array('name'=>$name, 'email'=>$email);
+  $vars = array('name'=>$nickname, 'email'=>$email);
   $result = postData(URL_API.'/mates/'.$mate_id, $vars, $headers);
   if (isset($result)) {
     if ($result->error) {

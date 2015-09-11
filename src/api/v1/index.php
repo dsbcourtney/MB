@@ -447,37 +447,15 @@ $app->get('/mates/:id', 'authenticate', function($mate_id) use ($app) {
 
 });
 
-$app->post('/mates/:id', 'authenticate', function($mate_id) use ($app) {
-  global $user_id;
-  $db = new DbHandler();
-})
-
 $app->post('/mates/add', 'authenticate', function() use ($app) {
   global $user_id, $user;
   verifyRequiredParams(array('name'));
   $email = $app->request->post('email');
   $name = $app->request->post('name');
-  $db = new DbHandler();
+  $errmess = existingMate($user_id, $name, $email);
 
-  $doCreate = true;
-  $errmess = '';
-  // First lets see if they already have that username in their mates list
-  if ($db->getMateByNickname($user_id, $name)) {
-    $doCreate = false;
-    $errmess = 'You already have a mate by that nickname, please choose another';
-  }
-
-  if ($email!='' && $db->getMateByEmail($user_id, $email)) {
-    $doCreate = false;
-    $errmess = 'You already have a mate using that email address, please choose another';
-  }
-
-  if ($email!='' && $email==$user['email']) {
-    $doCreate = false;
-    $errmess = 'You are trying to add your own email address to a mate, please use another';    
-  } 
-
-  if ($doCreate) {
+  if ($errmess=='') {
+    $db = new DbHandler();
     // Now lets check to see if that email exists as a user, if so get his userid
     $mate_id = 0;
     if ($email!='') {
@@ -489,9 +467,8 @@ $app->post('/mates/add', 'authenticate', function() use ($app) {
       $email = '';
     }
     $datetime = date('Y-m-d H:i:s', time());
-    $res = $db->addMate($name, $email, $mate_id, $user_id, $datetime); // True or false
     
-    if ($res) {
+    if ($db->addMate($name, $email, $mate_id, $user_id, $datetime)){ // True or false) {
       // If mate_id=0 and email exists send invitation email
       $response["error"] = false;
       $response["message"] = "Your mate has been added";    
@@ -509,7 +486,45 @@ $app->post('/mates/add', 'authenticate', function() use ($app) {
   
 });
 
+$app->post('/mates/:id', 'authenticate', function($id) use ($app) {
+  global $user_id;
+  verifyRequiredParams(array('name'));
+  $email = $app->request->post('email');
+  $name = $app->request->post('name');  
+  $errmess = existingMate($user_id, $name, $email);
 
+  if ($errmess=='') {
+    $db = new DbHandler();
+
+    // Now lets check to see if that email exists as a user, if so get his userid
+    $mate_id = 0;
+    if ($email!='') {
+      $user = $db->getUserByEmail($email);
+      if ($user!=NULL) {
+        $mate_id = $user['id'];
+      }
+    } else {
+      $email = '';
+    }
+    $datetime = date('Y-m-d H:i:s', time());
+
+    if ($db->updateMate($name, $email, $id, $datetime, $mate_id)) {
+      // If mate_id=0 and email exists send invitation email
+      $response["error"] = false;
+      $response["message"] = "Your mate has been updated";    
+      echoRespnse(201, $response);
+    } else {
+      $response["error"] = true;
+      $response["message"] = "Sorry an error occurred whilst updating your mate";
+      echoRespnse(200, $response); 
+    }
+  } else {
+    $response["error"] = true;
+    $response["message"] = $errmess;    
+    echoRespnse(200, $response);     
+  }
+
+});
 
 
 /** 
