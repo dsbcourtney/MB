@@ -392,7 +392,9 @@ $app->post('/account/mates/edit/:id', 'authenticate', function($mate_id) use ($a
   $result = postData(URL_API.'/mates/'.$mate_id, $vars, $headers);
   if (isset($result)) {
     if ($result->error) {
+      $rs = getData(URL_API.'/mates/'.$mate_id, $headers);
       $vars = array('title'=>'Mates', 'error'=>$result->error, 'message'=>$result->message, 'page'=>'mates');
+      $vars['object'] = $rs;
       $app->render('mates_add.twig.html', $vars);
     } else {
       $result = getData(URL_API.'/mates/list', $headers);

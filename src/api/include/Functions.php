@@ -247,10 +247,10 @@ function existingMate($user_id, $name, $email, $apartfrom=0) { // array please
   global $user;
   $db = new DbHandler();
   $errmess = '';
-  if ($db->getMateByNickname($user_id, $name, $apartfrom=0)) {
+  if ($db->getMateByNickname($user_id, $name, $apartfrom)) {
     $errmess = 'You already have a mate by that nickname, please choose another';
   }
-  if ($email!='' && $db->getMateByEmail($user_id, $email, $apartfrom=0)) {
+  if ($email!='' && $db->getMateByEmail($user_id, $email, $apartfrom)) {
     $errmess = 'You already have a mate using that email address, please choose another';
   }
   if ($email!='' && $email==$user['email']) {

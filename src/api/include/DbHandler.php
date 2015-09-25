@@ -423,7 +423,15 @@ class DbHandler {
   * Get a mate by nickname
   **/
   public function getMateByNickname($userid, $name, $apartfrom=0) { // apart from array
-    $sql = $this->conn->prepare("SELECT mate_id, email, nickname, date_added, bet_count, active_bet_count, amount_lost, currency, active FROM mates WHERE user_id = ? AND nickname = ?");
+    $extrasql = '';
+    if (is_array($apartfrom)) {
+      $extrasql = " AND id NOT IN (";
+      foreach($apartfrom AS $v) {
+        $extrasql.= $v.",";
+      }
+      $extrasql = substr($extrasql,0,-1).")";
+    }
+    $sql = $this->conn->prepare("SELECT mate_id, email, nickname, date_added, bet_count, active_bet_count, amount_lost, currency, active FROM mates WHERE user_id = ? AND nickname = ?".$extrasql);
     $sql->bind_param("is", $userid, $name);
     if ($sql->execute()) {
       $mate = $sql->get_result()->fetch_assoc();

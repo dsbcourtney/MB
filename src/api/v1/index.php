@@ -486,12 +486,15 @@ $app->post('/mates/add', 'authenticate', function() use ($app) {
   
 });
 
+/**
+* Editing a mate
+**/
 $app->post('/mates/:id', 'authenticate', function($id) use ($app) {
   global $user_id;
   verifyRequiredParams(array('name'));
   $email = $app->request->post('email');
   $name = $app->request->post('name');  
-  $errmess = existingMate($user_id, $name, $email);
+  $errmess = existingMate($user_id, $name, $email, array($id));
 
   if ($errmess=='') {
     $db = new DbHandler();
@@ -502,6 +505,7 @@ $app->post('/mates/:id', 'authenticate', function($id) use ($app) {
       $user = $db->getUserByEmail($email);
       if ($user!=NULL) {
         $mate_id = $user['id'];
+        // And then maybe we should send that mate an email to say that he has a new mate? 
       }
     } else {
       $email = '';
