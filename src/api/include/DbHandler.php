@@ -343,7 +343,7 @@ class DbHandler {
   * Get a list of mates
   * @param userid 
   **/
-  public function getMatesList($userid) {
+  public function getMatesList($userid) { // This could be either the mate or the matee! lol
     $sql = $this->conn->prepare("SELECT id, user_id, mate_id, email, nickname, date_added, bet_count, active_bet_count, amount_lost, currency, active FROM mates WHERE user_id = ? ORDER BY date_added DESC");
     $sql->bind_param("i", $userid);
     if ($sql->execute()) {
@@ -354,6 +354,53 @@ class DbHandler {
       return NULL;
     }
   }
+
+  /**
+  * Get a list of unconfirmed mates
+  * @param userid 
+  **/
+  public function getUnconfirmedMates($userid) { // This could be either the mate or the matee! lol
+    $sql = $this->conn->prepare("SELECT id, user_id, mate_id, email, nickname, date_added, bet_count, active_bet_count, amount_lost, currency, active FROM mates WHERE user_id = ? ORDER BY date_added DESC");
+    $sql->bind_param("i", $userid);
+    if ($sql->execute()) {
+      $mates = $sql->get_result();
+      $sql->close();
+      return $mates;
+    } else {
+      return NULL;
+    }
+  }
+
+  /** 
+  * Adjust mates table to reflect new registration
+  * @param userid, useremail
+  **/
+  public function existingMates($userid, $useremail) {
+    $sql = $this->conn->prepare("UPDATE mates SET mate_id = ? WHERE email = ?");
+    $sql->bind_param("is", $userid, $useremail);
+    if ($sql->execute()) {
+      $sql->close();
+      return TRUE;
+    } else {
+      return NULL;
+    }
+  }
+
+  /** 
+  * Adjust mates table to reflect change of email (once email has been approved)
+  * @param $userid 
+  **/
+  public function changeMates($userid, $useremail) {
+    $sql= $this->conn->prepare("UPDATE mates SET email = ? WHERE mate_id = ?");
+    $sql->bind_param("si", $useremail, $userid);
+    if ($sql->execute()) {
+      $sql->close();
+      return TRUE;
+    } else {
+      return NULL;
+    }
+  }
+
 
   /**
   * Add a mate

@@ -100,6 +100,12 @@ $app->post('/register', function() use ($app) {
     // Send the user a registration email
     $user = $db->getUserByEmail($email);
     registrationEmail($email, $user, $validateUrl);
+
+    // I want to know also check to see if this new user has got any existing mates in the mates list
+    // IE check for their email in the list. If so put them in the unconfirmed list
+    $db->existingMates($user['id'], $email); // This also will happen if emails change
+
+
     $response['id'] = $user['id'];
     $response['username'] = $user['username'];
     $response['apiKey'] = $user['api_key'];
@@ -354,6 +360,7 @@ $app->post('/user/update', 'authenticate', function() use ($app) {
         //inform of email change
         //emailChangeEmail($user['email']); // Not created yet
         registrationEmail($email, $user, $validateUrl);
+        $db->changeMates($userid, $email); // Change the email is the mates table
       }
       $user = $db->getUserById($userid);
       $response["user"] = $user;
@@ -376,7 +383,7 @@ $app->post('/user/update', 'authenticate', function() use ($app) {
       $user = $db->getUserById($userid);
       $response["user"] = $user;
       $response["error"] = true;
-      $response["message"] = "Sorry, the email '".$email."' already exists";
+      $response["message"] = "Sorry, the email address '".$email."' already exists";
       echoRespnse(200, $response);
     }
 
@@ -394,6 +401,7 @@ $app->post('/user/update', 'authenticate', function() use ($app) {
 **/
 /**
 * Get list of mates based on the user id we get on authentication
+* If mate_id=0 then they do not exist in the system
 **/
 $app->get('/mates/list', 'authenticate', function() use ($app) {
   global $user_id;
@@ -401,6 +409,7 @@ $app->get('/mates/list', 'authenticate', function() use ($app) {
   $mates = $db->getMatesList($user_id);
   $response = array();
   if ($mates) {
+    $count = 0;
     $response['error'] = false;
     $response['message'] = 'Success';
     $response['mates'] = array();
@@ -413,7 +422,9 @@ $app->get('/mates/list', 'authenticate', function() use ($app) {
       $tmp['date_added'] = $mate['date_added'];
       
       array_push($response['mates'], $tmp);
+      $count++;
     }
+    $response['count'] = $count;
     echoRespnse(201, $response);
   } else {
     $response['error'] = true;
@@ -528,6 +539,19 @@ $app->post('/mates/:id', 'authenticate', function($id) use ($app) {
     echoRespnse(200, $response);     
   }
 
+});
+
+/**
+* Get a list of mates that you have unconfirmed
+* This will display a list of the mates that you have unconfirmed which you can dismiss or confirm
+* thereby giving them their own nickname and a row in the database
+* Where mate_id is set but confirmed = 0
+**/
+$app->get('/mates/new', 'authenticate', function() use ($app) {
+  global $user_id;
+  $db = new DbHandler();
+  $db->getUnconfirmedMates($user_id);
+  
 });
 
 

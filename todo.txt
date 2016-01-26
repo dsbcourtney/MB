@@ -1,0 +1,16 @@
+# To do list
+
+1) Account
+- Some account settings
+- Avatar
+- Facebook register
+- Twitter register
+- Notification settings (whether you get emailed about bets ending etc)
+
+2) Advanced Bet Options
+- 
+-
+
+3) Send notification stuff cron job scripts!
+
+4) Bet statistics
