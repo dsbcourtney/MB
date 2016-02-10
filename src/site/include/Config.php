@@ -19,3 +19,7 @@ $vars = array();
 $vars['userid'] = (isset($_SESSION[SESSION_VAR.'userid']) && $_SESSION[SESSION_VAR.'userid'])?$_SESSION[SESSION_VAR.'userid']:0;
 $vars['username'] = (isset($_SESSION[SESSION_VAR.'username']) && $_SESSION[SESSION_VAR.'username'])?$_SESSION[SESSION_VAR.'username']:'';
 $vars['userkey'] = (isset($_SESSION[SESSION_VAR.'userkey']) && $_SESSION[SESSION_VAR.'userkey'])?$_SESSION[SESSION_VAR.'userkey']:'';
+$vars['fb_appid'] = '4155015962';
+$vars['fb_appsecret'] = '776757d6d99343e42819e2ef2167d3e1';
+$vars['fb_appversion'] = 'v2.0';
+$vars['fb_callback'] = '/login?fb=1';

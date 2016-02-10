@@ -1,0 +1,38 @@
+{% extends "layouts/full_width.twig.html" %}
+
+{% block title %}{{title}}{% endblock %}
+{% block content %}
+<form class="form-register" action="{{base_url}}/register/username" method="post">
+  <input type="hidden" name="name" value="{{name}}">
+  <input type="hidden" name="email" value="{{email}}"> 
+  <h2 class="form-signin-heading">Choose Your Username!</h2>
+  <div class="alert alert-info alert-dismissible" role="alert">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <strong>Info!</strong> As you have never logged into us before please choose your desired username.
+  </div>
+  <div class="form-group">
+    <label for="inputUsername">Username</label>
+    <div class="input-group">
+      <span class="input-group-addon">@</span>
+      <input name="username" type="text" class="form-control" id="inputUsername" data-minlength="4" placeholder="Enter desired username" value="{{username}}" required>
+    </div>
+    <span class="help-block">Minimum of 4 characters</span>
+  </div>
+  <button type="submit" class="btn btn-default btn-primary btn-lg btn-block">Save</button>
+  {% if error == true %}
+  <br>
+  <div class="alert alert-danger alert-dismissible" role="alert">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <strong>Error!</strong> {{message}}
+  </div>
+  {% endif %}
+</form>
+{% endblock %}
+
+{% block java %}
+<script>
+  $(document).ready(function(){
+    $('.form-register').validator();
+  });
+</script>
+{% endblock %}

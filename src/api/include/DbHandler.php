@@ -157,7 +157,7 @@ class DbHandler {
    * @param String $email User email id
    */
   public function getUserByEmail($email) {
-    $stmt = $this->conn->prepare("SELECT id, name, email, username, api_key, status, created_at, validate_email, validate_count, reset_password, active FROM users WHERE email = ?");
+    $stmt = $this->conn->prepare("SELECT id, name, email, username, api_key, facebook_id, twitter_id, status, created_at, validate_email, validate_count, reset_password, active FROM users WHERE email = ?");
     $stmt->bind_param("s", $email);
     if ($stmt->execute()) {
       $user = $stmt->get_result()->fetch_assoc();
@@ -199,6 +199,19 @@ class DbHandler {
       return NULL;
     }
   }  
+
+  /** 
+  * Update social id based on application 
+  * @param String $id application_users_id
+  * @param String $social application_field
+  * @param Integer $userid User id
+  */
+  public function updateSocial($id, $social, $userid) {
+    $update = $this->conn->prepare("UPDATE users SET ".$social."= ? WHERE id = ?");
+    $update->bind_param("si", $id, $userid);
+    $update->execute();
+    $update->close();
+  } 
 
   /**
   * Checking to see if reset password is allowed 

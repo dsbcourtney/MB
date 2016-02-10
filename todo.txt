@@ -14,3 +14,5 @@
 3) Send notification stuff cron job scripts!
 
 4) Bet statistics
+
+5) Login remember me

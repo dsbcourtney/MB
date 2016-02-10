@@ -34,3 +34,7 @@ define('EMAIL_REPLY_NAME', 'Matesbet Support');
 /* Url variables */
 define('URL_VALIDATE_EMAIL', URL_HOST.'/validate/email'); // This is set to the api at the moment 
 define('URL_RESET_PASSWORD', URL_HOST.'/reset/password'); // This is set to the api at the moment
+
+define('FB_APPID', '4155015962');
+define('FB_APPSECRET', '776757d6d99343e42819e2ef2167d3e1');
+define('FB_APPVERSION', 'v2.0');

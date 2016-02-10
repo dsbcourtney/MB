@@ -177,6 +177,47 @@ $app->get('/validation/email/:id', 'authenticate', function($userid) use ($app) 
   echoRespnse(200, $response);
 });
 
+
+/**
+* Check user social login based on the email address 
+* This is generally to handle facebook / twitter logins
+**/
+$app->post('/login/social/:name', function($socialname) use ($app) {
+  global $vars;
+  $email = $app->request->post('email');
+  $socialid = $app->request->post('social');
+  $appid = $app->request->post('appid');
+  $appsecret = $app->request->post('appsecret');
+  $db = new DbHandler();
+  $user = $db->getUserByEmail($email);
+  $response = array();
+
+  // First lets handle Facebook
+  if ($user != NULL && $socialname=='facebook' && $appid == FB_APPID && $appsecret == FB_APPSECRET) { // Secret app info matches up and the email exists so lets check to see if they have logged in via this before!?
+    if ($user['facebook_id']!=$socialid) { // Set it in the database, do a runner and then log them in!
+      $db->updateSocial($socialid, 'facebook_id', $user['id']);
+    }
+    $response["error"] = false;
+    $response['id'] = $user['id'];
+    $response['name'] = $user['name'];
+    $response['email'] = $user['email'];
+    $response['apiKey'] = $user['api_key'];
+    $response['createdAt'] = $user['created_at'];
+    $response['username'] = $user['username'];
+    $response['message'] = 'User found';
+
+  } elseif ($user != NULL && $socialname=='twitter') {
+
+  } else {
+    $response['error'] = false; // No error but user doesn't exist
+    $response['id'] = 0;
+    $response['message'] = 'User not found';
+    $response['user'] = false;    
+  }
+
+  echoRespnse(200, $response);
+});
+
 /**
 * Forgotten Login
 * url - /forgotten-login

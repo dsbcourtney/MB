@@ -74,18 +74,131 @@ $app->get('/', function() use ($app) {
 * Login page
 **/
 $app->get('/login', 'unauthenticate', function() use ($app) {
-  $vars = array('title'=>'Login');
-  $app->render('login.twig.html', $vars);
+  global $vars;
+  $fb = new Facebook\Facebook([
+    'app_id' => $vars['fb_appid'],
+    'app_secret' => $vars['fb_appsecret'],
+    'default_graph_version' => $vars['fb_appversion']
+    ]);
+  $helper = $fb->getRedirectLoginHelper();
+
+  if ($app->request->get('fb')==1) {
+
+    try {
+      $accessToken = $helper->getAccessToken();
+    } catch(Facebook\Exceptions\FacebookResponseException $e) {
+      // When Graph returns an error
+      $app->log->warning(logValue('Graph returned an error: '.$e->getMessage(), 'alert'));
+      $vars = array('title'=>'Error', 'message'=>'Facebook Graph returned an error');
+      $app->render('error.twig.html', $vars);
+      exit;
+    } catch(Facebook\Exceptions\FacebookSDKException $e) {
+      // When validation fails or other local issues
+      $app->log->warning(logValue('Facebook SDK returned an error: '.$e->getMessage(), 'alert'));
+      $vars = array('title'=>'Error', 'message'=>'Facebook SDK returned an error');
+      $app->render('error.twig.html', $vars);
+      exit;
+    }
+
+    if (! isset($accessToken)) {
+      if ($helper->getError()) {
+        $errormess = "Error: " . $helper->getError() . "\n";
+        $errormess.= "Error Code: " . $helper->getErrorCode() . "\n";
+        $errormess.= "Error Reason: " . $helper->getErrorReason() . "\n";
+        $errormess.= "Error Description: " . $helper->getErrorDescription() . "\n";
+        $app->log->warning(logValue('Facebook returned an error: '.$errormess, 'alert'));
+        $vars = array('title'=>'Error', 'message'=>'Facebook returned an access token error');
+        $app->render('error.twig.html', $vars);        
+      } else {
+        $app->log->warning(logValue('Facebook returned an error: Bad Request', 'alert'));
+        $vars = array('title'=>'Error', 'message'=>'Facebook returned an error: Bad Request');
+        $app->render('error.twig.html', $vars);  
+      }
+      exit;
+    }
+
+    //var_dump($accessToken->getValue());
+    //$app->log->debug(logValue('Facebook debug: '.var_export($accessToken->getValue()), 'alert')); 
+
+    // So now they have logged in successfully (if they don't login in correctly they won't come back to us)
+    // Lets get their data - if they have logged into us before then great
+
+    try {
+      // Returns a `Facebook\FacebookResponse` object
+      $response = $fb->get('/me?fields=id,name,email', $accessToken);
+    } catch(Facebook\Exceptions\FacebookResponseException $e) {
+      $errormess = 'Graph returned an error: ' . $e->getMessage();
+      $app->log->warning(logValue('Facebook returned an error: '.$errormess, 'alert'));
+      $vars = array('title'=>'Error', 'message'=>'Facebook returned an error: '.$errormess);
+      $app->render('error.twig.html', $vars);  
+      exit;
+    } catch(Facebook\Exceptions\FacebookSDKException $e) {
+      $errormess = 'Facebook SDK returned an error: ' . $e->getMessage();
+      $app->log->warning(logValue('Facebook returned an error: '.$errormess, 'alert'));
+      $vars = array('title'=>'Error', 'message'=>'Facebook returned an error: '.$errormess);      
+      exit;
+    }
+
+    $user = $response->getGraphUser();
+
+    //var_dump($user);
+    $vars = array('email'=>$user['email'], 'social'=>$user['id'], 'appid'=>$vars['fb_appid'], 'appsecret'=>$vars['fb_appsecret']);
+    $result = postData(URL_API.'/login/social/facebook', $vars);
+
+    if (isset($result)) {
+      if (!$result->error && $result->id>0) { // Login accepted
+        // Login accepted
+        // Set sessions
+        $_SESSION[SESSION_VAR.'username'] = $result->username;
+        $_SESSION[SESSION_VAR.'userid'] = $result->id;
+        $_SESSION[SESSION_VAR.'userkey'] = $result->apiKey;
+        // Cookie set
+        if ($app->request->post('remember')=='remember-me') {
+          //setcookie();
+        }
+        // Redirect to account
+        header('location:'.URL_HOST.'/account');
+        exit;
+      } elseif (!$result->error && !$result->user) { // Take them to registration page as never been with us before
+
+        $vars = array('name'=>$user['name'], 'email'=>$user['email'], 'validateUrl'=>URL_HOST.'/account/validate', 'title'=>'Register');
+
+        $app->render('register_username.twig.html', $vars);
+
+      } else {
+        $vars = array('title'=>'Login', 'error'=>1, 'message'=>$result->message, 'email'=>$email);
+        $app->render('login.twig.html', $vars);
+      }
+    } else {
+      $vars = array('title'=>'Error', 'message'=>'API not working');
+      $app->render('error.twig.html', $vars);
+    }
+
+
+  } else {
+
+    // Get the callback url for the facebook login procedure
+    $permissions = ['email'];
+    $loginUrl = $helper->getLoginUrl(URL_HOST.$vars['fb_callback'], $permissions);
+
+    $vars = array('title'=>'Login', 'fb_loginurl'=>$loginUrl);
+    $app->render('login.twig.html', $vars);
+
+  }
 });
 
 /**
 * Login page on submit
 **/
 $app->post('/login', 'unauthenticate', function() use ($app) {
+  global $vars;
+  // Normal login, Facebook and Twitter are handling via GET
+
   $email = $app->request->post('email');
   $password = $app->request->post('password');
   $vars = array('email'=>$email, 'password'=>$password);
   $result = postData(URL_API.'/login', $vars);
+
   if (isset($result)) {
     if (!$result->error && $result->id>0) {
       // Login accepted
@@ -109,6 +222,8 @@ $app->post('/login', 'unauthenticate', function() use ($app) {
     $app->render('error.twig.html', $vars);
   }
 });
+
+
 
 /**
 * Register page 
@@ -144,6 +259,14 @@ $app->post('/register', 'unauthenticate', function() use ($app) {
     $vars = array('title'=>'Error', 'message'=>'API not working');
     $app->render('error.twig.html', $vars);
   }
+});
+
+/** 
+* Register username page
+**/
+$app->post('/register/username', 'unauthenticate', function() use ($app) {
+
+
 });
 
 /**
