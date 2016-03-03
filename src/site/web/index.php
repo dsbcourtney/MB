@@ -6,6 +6,8 @@ require_once '../include/Config.php';
 require_once '../include/Functions.php';
 require '../libs/vendor/autoload.php';
 
+use Abraham\TwitterOAuth\TwitterOAuth;
+
 $logWriter = new \Slim\Extras\Log\DateTimeFileWriter(array(
   'path' => LOG_LOCATION,
   'name_format' => 'Y-m-d',
@@ -66,7 +68,7 @@ function unauthenticate(\Slim\Route $route) {
 **/
 $app->get('/', function() use ($app) {
   global $vars;
-  array_push($vars, array('title'=>'Home'));
+  $vars = array_merge($vars, array('title'=>'Home', 'navpage'=>'home'));
 	$app->render('index.twig.html', $vars);
 });
 
@@ -75,12 +77,24 @@ $app->get('/', function() use ($app) {
 **/
 $app->get('/login', 'unauthenticate', function() use ($app) {
   global $vars;
+  // Facebook
   $fb = new Facebook\Facebook([
     'app_id' => $vars['fb_appid'],
     'app_secret' => $vars['fb_appsecret'],
     'default_graph_version' => $vars['fb_appversion']
     ]);
   $helper = $fb->getRedirectLoginHelper();
+
+  //Twitter
+  if ($app->request->get('tw')===NULL) {
+    $tw = new TwitterOAuth($vars['tw_key'], $vars['tw_secret']);
+    $request_token = $tw->oauth('oauth/request_token', array('oauth_callback' => URL_HOST.$vars['tw_callback']));
+
+    $_SESSION['oauth_token'] = $request_token['oauth_token'];
+    $_SESSION['oauth_token_secret'] = $request_token['oauth_token_secret'];
+
+    $tw_url = $tw->url('oauth/authorize', array('oauth_token' => $request_token['oauth_token']));
+  }
 
   if ($app->request->get('fb')==1) {
 
@@ -173,18 +187,67 @@ $app->get('/login', 'unauthenticate', function() use ($app) {
       $vars = array('title'=>'Error', 'message'=>'API not working');
       $app->render('error.twig.html', $vars);
     }
+  } elseif ($app->request->get('tw')==1) {
+    $request_token = [];
+    $request_token['oauth_token'] = $_SESSION['oauth_token'];
+    $request_token['oauth_token_secret'] = $_SESSION['oauth_token_secret'];
+    $connection = new TwitterOAuth($vars['tw_key'], $vars['tw_secret'], $request_token['oauth_token'], $request_token['oauth_token_secret']);
+    $oauth_verifier = $app->request->get('oauth_verifier');
+    $access_token = $connection->oauth("oauth/access_token", ["oauth_verifier" => $oauth_verifier]);
+    $connection = new TwitterOAuth($vars['tw_key'], $vars['tw_secret'], $access_token['oauth_token'], $access_token['oauth_token_secret']);
 
+    $user = $connection->get("account/verify_credentials");
 
+    var_dump($user);
+    $vars = array('email'=>$user['email'], 'social'=>$user['id'], 'appid'=>$vars['tw_key'], 'appsecret'=>$vars['tw_secret']);
+    $result = postData(URL_API.'/login/social/twitter', $vars);
+
+    if (isset($result)) {
+      if (!$result->error && $result->id>0) { // Login accepted
+        // Login accepted
+        // Set sessions
+        $_SESSION[SESSION_VAR.'username'] = $result->username;
+        $_SESSION[SESSION_VAR.'userid'] = $result->id;
+        $_SESSION[SESSION_VAR.'userkey'] = $result->apiKey;
+        // Cookie set
+        if ($app->request->post('remember')=='remember-me') {
+          //setcookie();
+        }
+        // Redirect to account
+        header('location:'.URL_HOST.'/account');
+        exit;
+      } elseif (!$result->error && !$result->user) { // Take them to registration page as never been with us before
+
+        $vars = array('name'=>$user['name'], 'email'=>$user['email'], 'validateUrl'=>URL_HOST.'/account/validate', 'title'=>'Register');
+
+        $app->render('register_username.twig.html', $vars);
+
+      } else {
+        $vars = array('title'=>'Login', 'error'=>1, 'message'=>$result->message, 'email'=>$email);
+        $app->render('login.twig.html', $vars);
+      }
+    } else {
+      $vars = array('title'=>'Error', 'message'=>'API not working');
+      $app->render('error.twig.html', $vars);
+    }   
   } else {
 
     // Get the callback url for the facebook login procedure
     $permissions = ['email'];
     $loginUrl = $helper->getLoginUrl(URL_HOST.$vars['fb_callback'], $permissions);
 
-    $vars = array('title'=>'Login', 'fb_loginurl'=>$loginUrl);
+    $vars = array('title'=>'Login', 'fb_loginurl'=>$loginUrl, 'tw_loginurl'=>$tw_url);
     $app->render('login.twig.html', $vars);
 
   }
+});
+
+$app->get('/about', function() use ($app) {
+  global $vars;
+  $content = '<p>Test content.</p>';
+  $vars = array_merge($vars, array('title'=>'About Us', 'content'=>$content, 'navpage'=>'about'));
+  $app->render('static.twig.html', $vars);
+
 });
 
 /**
@@ -222,8 +285,6 @@ $app->post('/login', 'unauthenticate', function() use ($app) {
     $app->render('error.twig.html', $vars);
   }
 });
-
-
 
 /**
 * Register page 
@@ -265,7 +326,27 @@ $app->post('/register', 'unauthenticate', function() use ($app) {
 * Register username page
 **/
 $app->post('/register/username', 'unauthenticate', function() use ($app) {
+  $name = $app->request->post('name');
+  $email = $app->request->post('email');
+  $username = $app->request->post('username');
 
+  $vars = array('name'=>$name, 'email'=>$email, 'username'=>$username, 'validateUrl'=>URL_HOST.'/account/validate');
+  $result = postData(URL_API.'/register', $vars);
+  if (isset($result)) {
+    if (!$result->error) {
+      $_SESSION[SESSION_VAR.'username'] = $result->username;
+      $_SESSION[SESSION_VAR.'userid'] = $result->id;
+      $_SESSION[SESSION_VAR.'userkey'] = $result->apiKey;
+      header('location:'.URL_HOST.'/account');
+      exit;
+    } else {
+      $vars = array_merge($vars, array('title'=>'Register', 'error'=>1, 'message'=>$result->message));
+      $app->render('register_username.twig.html', $vars);
+    }        
+  } else {
+    $vars = array('title'=>'Error', 'message'=>'API not working');
+    $app->render('error.twig.html', $vars);
+  }
 
 });
 

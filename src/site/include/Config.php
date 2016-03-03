@@ -23,3 +23,8 @@ $vars['fb_appid'] = '4155015962';
 $vars['fb_appsecret'] = '776757d6d99343e42819e2ef2167d3e1';
 $vars['fb_appversion'] = 'v2.0';
 $vars['fb_callback'] = '/login?fb=1';
+$vars['tw_key'] = 'rlqXrXvH46X9dIkL3rzQ';
+$vars['tw_secret'] = 'CwnYIJrcQElEqQ7yN09VzT94mLo57b6csBlV9hab8Sk';
+$vars['tw_access_token'] = '19532878-LhtZsZpvybHFkkq68zzfz6LK923UfSAyZiM4x0o';
+$vars['tw_access_secret'] = 'KmrNVKXqhsLsexfTjgHqVmx8jyRTxpbeK98utKQ2KQ';
+$vars['tw_callback'] = '/login?tw=1';

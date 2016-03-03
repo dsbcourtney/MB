@@ -51,6 +51,26 @@ body {
   margin-top:5px;
 }
 
+/* Social login buttons */
+
+.btn-social {
+  background:url('../img/socialBtn.gif') no-repeat;
+  width:300px;
+  height:65px;
+  display:block;
+  margin-top:5px;
+  font-size:0;  
+}
+
+.btn-facebook {
+  background-position:0 0;
+}
+
+.btn-twitter {
+  background-position:0 -65px;  
+}
+
+
 /* data tables bootstap css */
 
 div.dataTables_length label {

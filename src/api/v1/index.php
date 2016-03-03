@@ -73,23 +73,30 @@ function authenticate(\Slim\Route $route) {
  */
 $app->post('/register', function() use ($app) {
   // check for required params
-  verifyRequiredParams(array('name', 'email', 'password', 'username'));
+  verifyRequiredParams(array('name', 'email', 'username'));
 
   $response = array();
 
   // reading post params
   $name = $app->request->post('name');
   $email = $app->request->post('email');
-  $password = $app->request->post('password');
-  $username = $app->request->post('username');
-  $validateUrl = $app->request->post('validateUrl');
-
+  
   // validating email address
   validateEmail($email);
-  // validating password 
-  validatePass($password);
+
+  if (null !== $app->request->post('password') && $app->request->post('password')!='') {
+    $password = $app->request->post('password');
+    // validating password 
+    validatePass($password);
+  } else { // For social logins
+    $password = randomString(10);
+  }
+   
+  $username = $app->request->post('username');
   // validating username
   validateUsername($username);
+
+  $validateUrl = $app->request->post('validateUrl');
 
   $db = new DbHandler();
   $res = $db->createUser($name, $email, $password, $username);
@@ -104,7 +111,6 @@ $app->post('/register', function() use ($app) {
     // I want to know also check to see if this new user has got any existing mates in the mates list
     // IE check for their email in the list. If so put them in the unconfirmed list
     $db->existingMates($user['id'], $email); // This also will happen if emails change
-
 
     $response['id'] = $user['id'];
     $response['username'] = $user['username'];
